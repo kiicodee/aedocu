@@ -1,5 +1,5 @@
 // Service worker Mampat: simpan aplikasi supaya tetap jalan tanpa internet.
-const CACHE = "mampat-v3";
+const CACHE = "mampat-v4";
 const CORE = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./favicon-32.png",
   "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js",
   "https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js",

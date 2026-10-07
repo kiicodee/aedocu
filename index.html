@@ -24,7 +24,7 @@
 <script>
   window.MAMPAT_CONFIG = {
     GA4_ID: "",
-    GOATCOUNTER: "",
+    GOATCOUNTER: "zaky",
     PWA: true
   };
 </script>
@@ -666,7 +666,7 @@ details.log summary { padding-block: 8px; }
   function track(name, params) {
     try {
       if (CFG.GA4_ID && window.gtag) window.gtag("event", name, params || {});
-      if (CFG.GOATCOUNTER && window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: "aksi/" + name, title: name, event: true });
+      if (CFG.GOATCOUNTER && window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: "mampat/aksi/" + name, title: name, event: true });
     } catch (e) {}
   }
   function bucket(b) { return b < 200 * KB ? "<200KB" : b < MB ? "200KB-1MB" : b < 5 * MB ? "1-5MB" : b < 20 * MB ? "5-20MB" : b < 100 * MB ? "20-100MB" : ">100MB"; }
