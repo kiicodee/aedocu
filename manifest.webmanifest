@@ -1,7 +1,7 @@
 {
-  "name": "Mampat · Kompres PDF sesuai ukuran",
+  "name": "Mampat · Alat PDF tanpa upload",
   "short_name": "Mampat",
-  "description": "Kompres PDF ke ukuran yang kamu tentukan sendiri. Teks tetap utuh, tanpa upload.",
+  "description": "Kompres, gabung, pisah, atur halaman, dan ubah PDF ke gambar atau sebaliknya. Semua diproses di perangkatmu: tanpa upload, tanpa batas, tanpa iklan, bisa offline.",
   "lang": "id",
   "start_url": "./",
   "scope": "./",
@@ -26,9 +26,15 @@
       "purpose": "maskable"
     }
   ],
+  "shortcuts": [
+    { "name": "Kompres PDF", "url": "./kompres/" },
+    { "name": "Gabung PDF", "url": "./gabung/" },
+    { "name": "Pisah PDF", "url": "./pisah/" },
+    { "name": "Gambar ke PDF", "url": "./gambar-ke-pdf/" }
+  ],
   "file_handlers": [
     {
-      "action": "./",
+      "action": "./kompres/",
       "accept": {
         "application/pdf": [
           ".pdf"
