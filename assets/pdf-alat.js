@@ -83,7 +83,7 @@
   async function renderInto(job) {
     const { doc, pageNo, canvas, box, rotate } = job;
     const page = await doc.getPage(pageNo);
-    const rot = ((page.rotate || 0) + (rotate || 0)) % 360;
+    const rot = ((((page.rotate || 0) + (rotate || 0)) % 360) + 360) % 360;
     const vp1 = page.getViewport({ scale: 1, rotation: rot });
     const ratio = Math.min(2, window.devicePixelRatio || 1);
     const s = Math.min(box / vp1.width, box / vp1.height) * ratio;
