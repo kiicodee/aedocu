@@ -377,3 +377,11 @@ mampat-foot footer { margin-top: 32px; }
 .steps3 li { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 6px; font-size: 14.5px; color: var(--muted); }
 .steps3 li b { color: var(--ink); font-size: 15.5px; }
 .steps3 li::before { counter-increment: s; content: "LANGKAH " counter(s); font-family: var(--f-mono); font-size: 12px; font-weight: 600; color: var(--accent-text); letter-spacing: .06em; }
+@media (max-width: 560px) {
+  .top nav { gap: 10px; }
+  .cards { gap: 10px; }
+  .card { grid-template-columns: 42px minmax(0, 1fr); gap: 2px 14px; align-items: center; padding: 14px 16px; }
+  .card .ti { grid-row: span 2; }
+  .card h3 { margin: 0; font-size: 16.5px; }
+  .card p { font-size: 13.5px; }
+}
