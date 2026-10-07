@@ -150,9 +150,9 @@
       d.innerHTML = p.del ? A.ICON.undo : A.ICON.trash; d.setAttribute("aria-label", p.del ? "Kembalikan halaman" : "Hapus halaman");
       d.classList.toggle("bad", !p.del);
     });
-    const kept = pages.filter((p) => !p.del).length, changed = pages.some((p, k) => p.rot || p.del || p.i !== k);
+    const kept = pages.filter((p) => !p.del).length;
     $("go").disabled = busy || !kept;
-    $("goText").textContent = !kept ? "Semua halaman dihapus" : changed ? "Simpan PDF (" + kept + " halaman)" : "Simpan PDF (belum ada perubahan)";
+    $("goText").textContent = !kept ? "Semua halaman dihapus" : "Simpan PDF (" + kept + " halaman)";
   }
   function rotate(p, d) {
     p.rot = ((p.rot + d + 540) % 360) - 180; if (p.rot === -180) p.rot = 180;

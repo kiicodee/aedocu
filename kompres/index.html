@@ -130,8 +130,9 @@ details.log summary { padding-block: 8px; }
 }
 
 /* render bagian bawah halaman hanya saat mendekati layar */
-#cara, #beda, #faq, footer { content-visibility: auto; contain-intrinsic-size: auto 900px; }
-footer { contain-intrinsic-size: auto 80px; }
+/* hanya tinggi: "contain-intrinsic-size: auto 900px" juga membuat lebarnya 900px dan halaman bisa digeser ke samping di tablet */
+#cara, #beda, #faq, footer { content-visibility: auto; contain-intrinsic-height: auto 900px; }
+footer { contain-intrinsic-height: auto 80px; }
 </style>
 </head>
 <body>
