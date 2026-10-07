@@ -1,0 +1,1337 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kompres PDF sesuai ukuran · Mampat</title>
+<meta name="description" content="Kompres PDF ke ukuran yang kamu tentukan sendiri, dari 20 KB sampai ratusan MB. Teks dan link tetap utuh, tanpa upload, gratis tanpa batas.">
+<meta name="theme-color" content="#ffd02b">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Mampat · Kompres PDF sesuai ukuran">
+<meta property="og:description" content="Kompres PDF ke ukuran yang kamu tentukan sendiri, dari 20 KB sampai ratusan MB. Teks dan link tetap utuh, tanpa upload, gratis tanpa batas.">
+<meta property="og:image" content="../icon-512.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" type="image/png" href="../favicon-32.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mampat">
+<script src="../assets/mampat.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400..700&family=JetBrains+Mono:wght@400..600&display=optional">
+<link rel="stylesheet" href="../assets/mampat.css">
+<style>
+/* khusus alat kompres */
+/* target */
+.tbox { border: 1px solid var(--line); border-radius: var(--r); padding: 16px 16px 12px; display: grid; gap: 14px; background: var(--surface); transition: border-color .15s, box-shadow .15s; }
+.tbox:focus-within { border-color: var(--ink); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 45%, transparent); }
+.trow { display: flex; align-items: center; gap: 10px; }
+.trow input { flex: 1 1 auto; min-width: 0; width: 100%; border: 0; background: transparent; font-family: var(--f-display); font-stretch: 125%; font-weight: 800; font-size: clamp(40px, 6vw, 56px); letter-spacing: -0.03em; line-height: 1; padding: 0; color: var(--ink); font-variant-numeric: tabular-nums; }
+.trow input:focus { outline: none; }
+.tsub { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.delta { font-family: var(--f-mono); font-weight: 600; color: var(--ink); }
+.delta.up { color: var(--warn); }
+
+.slider { position: relative; padding-top: 4px; }
+.slider input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 36px; background: transparent; margin: 0; cursor: pointer; }
+.slider input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: linear-gradient(to right, var(--ink) var(--p, 50%), var(--line) var(--p, 50%)); }
+.slider input[type=range]::-moz-range-track { height: 6px; border-radius: 3px; background: var(--line); }
+.slider input[type=range]::-moz-range-progress { height: 6px; border-radius: 3px; background: var(--ink); }
+.slider input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); border: 2px solid var(--ink); margin-top: -8px; box-shadow: 0 2px 6px rgba(0,0,0,.2); transition: transform .12s; }
+.slider input[type=range]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: var(--accent); border: 2px solid var(--ink); }
+.slider input[type=range]:active::-webkit-slider-thumb { transform: scale(1.15); }
+.ticks { position: relative; height: 18px; font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+.ticks span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+.ticks span::before { content: ""; position: absolute; left: 50%; top: -6px; width: 1px; height: 4px; background: var(--muted); }
+.ticks span.edge-l { transform: none; } .ticks span.edge-l::before { left: 0; }
+.ticks span.edge-r { transform: translateX(-100%); } .ticks span.edge-r::before { left: auto; right: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 11px; font-family: var(--f-mono); font-size: 12.5px; cursor: pointer; transition: border-color .15s, background .15s; }
+.chip:hover { border-color: var(--ink); }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+
+/* empty state illustration */
+.demo { display: grid; place-items: center; gap: 22px; padding: 18px 0; text-align: center; }
+.demo svg { width: min(100%, 320px); height: auto; }
+.demo .cap { font-size: 14px; color: var(--muted); max-width: 36ch; margin: 0; }
+.demo .ex { font-family: var(--f-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 3px 9px; }
+
+/* compare */
+.cmp { position: relative; width: 100%; aspect-ratio: var(--ar, 0.75); max-height: 440px; border-radius: 12px; overflow: hidden; background: #fff; border: 1px solid var(--line); user-select: none; touch-action: pan-y; --x: 50%; --ox: 50%; --oy: 20%; margin-inline: auto; }
+.cmp img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; transform-origin: var(--ox) var(--oy); transition: transform .25s ease; pointer-events: none; }
+.cmp .after { clip-path: inset(0 0 0 var(--x)); }
+.cmp.zoom img { transform: scale(2.6); }
+.cmp .bar { position: absolute; top: 0; bottom: 0; left: var(--x); width: 2px; margin-left: -1px; background: var(--accent); box-shadow: 0 0 0 1px rgba(0,0,0,.25); pointer-events: none; }
+.cmp .knob { position: absolute; top: 50%; left: 50%; width: 34px; height: 34px; border-radius: 50%; transform: translate(-50%, -50%); background: var(--accent); border: 2px solid #0d1015; display: grid; place-items: center; color: #0d1015; }
+.cmp .knob svg { width: 16px; height: 16px; }
+.cmp .lb { position: absolute; top: 10px; font-family: var(--f-mono); font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px; background: rgba(13,16,21,.78); color: #fff; pointer-events: none; }
+.cmp .lb.l { left: 10px; } .cmp .lb.r { right: 10px; background: #ffd02b; color: #0d1015; }
+.cmp input[type=range] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; margin: 0; cursor: ew-resize; }
+.cmp .busy { position: absolute; inset: 0; display: grid; place-items: center; background: color-mix(in srgb, #ffffff 55%, transparent); font-size: 13px; font-weight: 600; color: #0d1015; backdrop-filter: blur(2px); }
+.cmp-tools { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 12.5px; color: var(--muted); flex-wrap: wrap; }
+
+.pred { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 16px; align-items: end; padding: 16px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); }
+.pred .k { font-size: 12px; color: var(--muted); }
+.pred .q { font-family: var(--f-display); font-stretch: 112%; font-weight: 800; font-size: 22px; letter-spacing: -0.01em; }
+.meter { display: flex; gap: 4px; }
+.meter i { width: 18px; height: 8px; border-radius: 2px; background: var(--line); transition: background .25s; }
+.meter[data-l="5"] i:nth-child(-n+5), .meter[data-l="4"] i:nth-child(-n+4) { background: var(--good); }
+.meter[data-l="3"] i:nth-child(-n+3) { background: var(--accent); }
+.meter[data-l="2"] i:nth-child(-n+2) { background: var(--warn); }
+.meter[data-l="1"] i:nth-child(-n+1) { background: var(--bad); }
+.pred .spec { grid-column: 1 / -1; font-family: var(--f-mono); font-size: 12.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 14px; }
+
+/* anatomy of the file */
+.anat { display: grid; gap: 10px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--r); background: var(--surface-2); }
+.anat-h { display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px; color: var(--muted); }
+.anat-h b { color: var(--ink); font-weight: 600; }
+.anat-bar { display: flex; height: 10px; border-radius: 3px; overflow: hidden; background: var(--line); }
+.anat-bar i { display: block; height: 100%; transition: width .5s ease; }
+.a-img { background: var(--accent); } .a-font { background: var(--ink); } .a-oth { background: color-mix(in srgb, var(--ink) 30%, var(--line)); }
+.anat-leg { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.anat-leg span { display: inline-flex; align-items: center; gap: 6px; }
+.anat-leg b { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+.anat-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.method { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
+.method svg { width: 14px; height: 14px; }
+.method.text { background: color-mix(in srgb, var(--good) 14%, transparent); color: var(--good); }
+.method.raster { background: color-mix(in srgb, var(--warn) 14%, transparent); color: var(--warn); }
+
+/* responsive refinements */
+.step-h { flex-wrap: wrap; row-gap: 4px; }
+.anat-h { flex-wrap: wrap; row-gap: 2px; }
+.opt-row { flex-wrap: wrap; row-gap: 10px; }
+.opt-row > div:first-child { flex: 1 1 0; }
+.opt-row:has(> .seg) > div:first-child { flex-basis: 200px; }
+.chip { min-height: 34px; }
+details.adv summary { padding-block: 8px; margin-block: -8px; }
+details.log summary { padding-block: 8px; }
+.gauge { gap: 18px; padding-top: 6px; }
+.gtrack b::after { top: -14px; font-size: 9.5px; }
+@media (pointer: coarse) {
+  .chip { min-height: 40px; padding-inline: 14px; }
+  .slider input[type=range] { height: 40px; }
+  .slider input[type=range]::-webkit-slider-thumb { width: 28px; height: 28px; margin-top: -11px; }
+  .slider input[type=range]::-moz-range-thumb { width: 24px; height: 24px; }
+  .seg button { min-height: 38px; }
+  details.adv summary { padding-block: 12px; margin-block: -12px; }
+}
+@media (max-width: 420px) {
+  .step-h small { display: none; }
+  .cta { font-size: 16px; padding: 15px 14px; }
+  .pred { grid-template-columns: minmax(0, 1fr); }
+  .pred .q { font-size: 20px; }
+  .opt-row .seg { width: 100%; }
+  .opt-row .seg button { flex: 1; }
+  .acts .ghost { padding: 12px 8px; }
+  .res-num { gap: 8px 12px; }
+}
+
+/* render bagian bawah halaman hanya saat mendekati layar */
+#cara, #beda, #faq, footer { content-visibility: auto; contain-intrinsic-size: auto 900px; }
+footer { contain-intrinsic-size: auto 80px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <mampat-top data-tool="kompres"></mampat-top>
+
+  <header class="hero">
+    <span class="eyebrow">Kompres PDF · target ukuran bebas</span>
+    <h1>Mau berapa <mark>ukurannya?</mark></h1>
+    <p class="lede">Tulis angkanya, Mampat yang mengatur sisanya. <b>200 KB</b> untuk unggah berkas pendaftaran, <b>2 MB</b> untuk lampiran email, <b>50 MB</b> untuk arsip. Hasilnya tidak akan melewati angka itu, teks dan link tetap utuh, dan file kamu tidak pernah meninggalkan perangkat ini.</p>
+  </header>
+
+  <section class="tool" id="tool" aria-label="Alat kompres">
+    <div class="tool-l">
+      <div class="step" id="step1">
+        <div class="step-h"><h2><span class="num">1</span>Pilih PDF</h2><small id="pgInfo"></small></div>
+        <div id="drop" class="drop" tabindex="0" role="button" aria-label="Pilih file PDF">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0-4.5 4.5M12 4l4.5 4.5"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg></div>
+          <strong>Tarik PDF ke sini</strong>
+          <span>atau klik untuk memilih · bisa juga <kbd>Ctrl</kbd>+<kbd>V</kbd></span>
+        </div>
+        <div id="fcard" class="fcard" hidden>
+          <div class="thumb"><canvas id="thumb" width="56" height="72"></canvas></div>
+          <div style="min-width:0"><div id="fName" class="nm"></div><div id="fMeta" class="mt"></div></div>
+          <button id="fChange" class="ghost" type="button">Ganti</button>
+        </div>
+        <div id="anat" class="anat" hidden>
+          <div class="anat-h"><span>Isi file</span><b id="anatHint"></b></div>
+          <div class="anat-bar" aria-hidden="true"><i class="a-img" id="aImg"></i><i class="a-font" id="aFont"></i><i class="a-oth" id="aOth"></i></div>
+          <div class="anat-leg" id="anatLeg"></div>
+          <div class="anat-tags" id="anatTags"></div>
+        </div>
+        <input id="file" type="file" accept="application/pdf,.pdf" hidden>
+      </div>
+
+      <div class="step" id="step2">
+        <div class="step-h"><h2><span class="num">2</span>Ukuran maksimal</h2><small>1 MB = 1.024 KB</small></div>
+        <div class="tbox">
+          <div class="trow">
+            <input id="tNum" type="text" inputmode="decimal" autocomplete="off" value="500" aria-label="Angka ukuran target">
+            <div class="seg" role="group" aria-label="Satuan">
+              <button id="uKB" type="button" aria-pressed="true">KB</button>
+              <button id="uMB" type="button" aria-pressed="false">MB</button>
+            </div>
+          </div>
+          <div class="slider">
+            <input id="tRange" type="range" min="0" max="1000" step="1" value="500" aria-label="Geser ukuran target">
+            <div id="ticks" class="ticks" aria-hidden="true"></div>
+          </div>
+          <div class="tsub"><span id="tHuman">Maksimal 500 KB</span><span id="delta" class="delta"></span></div>
+        </div>
+        <div class="chips" id="chips"></div>
+      </div>
+
+      <details class="adv" id="adv">
+        <summary>Pengaturan lanjutan <span class="cur" id="advCur">150 dpi</span><svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+        <div class="adv-body">
+          <div class="opt-row">
+            <div><b>Resolusi tertinggi</b><p>Diturunkan otomatis hanya kalau target belum tercapai.</p></div>
+            <div class="seg" role="group" aria-label="Resolusi tertinggi" id="dpiSeg">
+              <button type="button" data-dpi="100" aria-pressed="false">100</button>
+              <button type="button" data-dpi="150" aria-pressed="true">150</button>
+              <button type="button" data-dpi="200" aria-pressed="false">200</button>
+              <button type="button" data-dpi="300" aria-pressed="false">300</button>
+            </div>
+          </div>
+          <div class="opt-row">
+            <div><b>Hitam-putih</b><p>Lebih kecil. Pas untuk scan KTP, ijazah, dan dokumen teks.</p></div>
+            <label class="sw"><input id="gray" type="checkbox" aria-label="Hitam-putih"><span></span></label>
+          </div>
+          <div class="opt-row">
+            <div><b>Wajib jaga teks</b><p>Jangan pernah ubah halaman jadi gambar. Kalau target tidak tercapai, kamu dapat hasil terkecil yang teksnya tetap utuh.</p></div>
+            <label class="sw"><input id="keepText" type="checkbox" aria-label="Wajib jaga teks"><span></span></label>
+          </div>
+        </div>
+      </details>
+
+      <div class="cta-wrap">
+        <button id="go" class="cta" type="button" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16M4 20h16M12 7v10m0 0-3-3m3 3 3-3"/></svg>
+          <span id="goText">Pilih PDF dulu</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="tool-r" aria-live="polite">
+      <!-- empty -->
+      <div id="sEmpty" class="state">
+        <div class="demo">
+          <span class="ex">Contoh</span>
+          <svg viewBox="0 0 320 200" aria-hidden="true">
+            <g fill="none" stroke="var(--ink)" stroke-width="1.6">
+              <rect x="22" y="30" width="96" height="128" rx="6" fill="var(--surface)"/>
+              <rect x="30" y="22" width="96" height="128" rx="6" fill="var(--surface)"/>
+              <rect x="38" y="14" width="96" height="128" rx="6" fill="var(--surface)"/>
+            </g>
+            <g stroke="var(--line)" stroke-width="5" stroke-linecap="round"><path d="M52 40h60M52 54h68M52 68h48M52 82h64M52 96h40"/></g>
+            <path d="M150 80h26m0 0-8-8m8 8-8 8" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="196" y="44" width="100" height="10" rx="3" fill="var(--ink)"/>
+            <rect x="206" y="62" width="80" height="48" rx="5" fill="var(--accent)" stroke="var(--ink)" stroke-width="1.6"/>
+            <path d="M218 78h56M218 90h40" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>
+            <rect x="196" y="118" width="100" height="10" rx="3" fill="var(--ink)"/>
+            <text x="78" y="186" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="15" font-weight="600" fill="var(--ink)">12,4 MB</text>
+            <text x="246" y="186" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="15" font-weight="600" fill="var(--ink)">480 KB</text>
+          </svg>
+          <p class="cap">Setelah PDF dipilih, kamu bisa lihat pratinjau halaman pertama dan rincian isi filenya sebelum mengompres. Geser target, pratinjaunya ikut berubah.</p>
+        </div>
+      </div>
+
+      <!-- preview -->
+      <div id="sPrev" class="state" hidden>
+        <div class="r-h"><h3>Pratinjau halaman 1</h3><span class="sub" id="zoomHint">Klik gambar untuk memperbesar</span></div>
+        <div id="cmp" class="cmp">
+          <img id="imgA" class="before" alt="Halaman 1 sebelum dikompres">
+          <img id="imgB" class="after" alt="Perkiraan halaman 1 setelah dikompres">
+          <span class="lb l">Asli</span><span class="lb r" id="lbR">Hasil</span>
+          <div class="bar"><div class="knob"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 6-6 6 6 6M15 6l6 6-6 6"/></svg></div></div>
+          <input id="cmpRange" type="range" min="0" max="100" value="50" aria-label="Geser pembanding sebelum dan sesudah">
+          <div id="cmpBusy" class="busy" hidden>Menganalisis halaman…</div>
+        </div>
+        <div class="pred">
+          <div style="grid-column:1/-1"><span id="method" class="method text"></span></div>
+          <div><div class="k">Perkiraan kualitas</div><div class="q" id="qLabel">—</div></div>
+          <div class="meter" id="meter" data-l="0" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="spec" id="spec"></div>
+        </div>
+        <div id="predNote"></div>
+      </div>
+
+      <!-- working -->
+      <div id="sWork" class="state" hidden>
+        <div class="work">
+          <svg class="press" viewBox="0 0 180 170" aria-hidden="true">
+            <g class="plate-t"><rect x="20" y="14" width="140" height="16" rx="4" fill="var(--ink)"/><rect x="84" y="0" width="12" height="16" fill="var(--ink)"/></g>
+            <g class="sheet"><rect x="50" y="48" width="80" height="74" rx="6" fill="var(--accent)" stroke="var(--ink)" stroke-width="2"/><path d="M64 70h52M64 85h38M64 100h46" stroke="var(--ink)" stroke-width="4" stroke-linecap="round"/></g>
+            <g class="plate-b"><rect x="20" y="140" width="140" height="16" rx="4" fill="var(--ink)"/></g>
+          </svg>
+          <div class="big" id="wPct">0%</div>
+          <div class="pbar"><i id="wBar"></i></div>
+          <div class="what" id="wWhat">Menyiapkan…</div>
+          <button id="cancel" class="ghost" type="button">Batalkan</button>
+        </div>
+      </div>
+
+      <!-- done -->
+      <div id="sDone" class="state" hidden>
+        <div class="res-top">
+          <span id="rPill" class="pill good"></span>
+          <div class="res-num"><span class="big" id="rBig">—</span><span class="from">dari <s id="rFrom"></s></span><span class="saved" id="rSaved"></span></div>
+        </div>
+        <div class="gauge" aria-hidden="true">
+          <div class="row"><span>Asli</span><div class="gtrack"><i class="o" id="gO"></i></div><span class="v" id="gOv"></span></div>
+          <div class="row"><span>Hasil</span><div class="gtrack"><i class="n" id="gN"></i><b id="gT"></b></div><span class="v" id="gNv"></span></div>
+        </div>
+        <div id="rNote"></div>
+        <div class="acts">
+          <button id="save" class="cta" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>Simpan PDF</button>
+          <button id="retarget" class="ghost" type="button">Ubah target</button>
+          <button id="another" class="ghost" type="button">File lain</button>
+        </div>
+        <details class="log"><summary>Rincian proses</summary><pre id="log"></pre></details>
+      </div>
+    </div>
+  </section>
+
+  <div class="facts">
+    <div><b>0 byte</b><span>yang dikirim ke server. Semua dikerjakan browser kamu.</span></div>
+    <div><b>Teks tetap utuh</b><span>yang dikecilkan gambarnya. Teks, link, dan bookmark tetap bisa dipakai.</span></div>
+    <div><b>Tanpa batas</b><span>tanpa akun, tanpa kuota harian, tanpa iklan.</span></div>
+  </div>
+
+  <section class="sec" id="cara">
+    <div class="sec-h"><span class="eyebrow">Cara kerja</span><h2>Dari besar ke pas, tanpa merusak isi</h2></div>
+    <ol class="how">
+      <li><span class="n">LANGKAH 1</span><h3>Rapikan tanpa merusak</h3><p>Mampat menyusun ulang struktur PDF lebih ringkas. Kalau ini sudah di bawah target, selesai: kualitas tetap asli dan teks masih bisa dicari.</p></li>
+      <li><span class="n">LANGKAH 2</span><h3>Kecilkan gambarnya saja</h3><p>Foto dan hasil scan di dalam PDF dikompres ulang dengan resolusi dan kualitas tertinggi yang masih muat di target. Teks, font, link, bookmark, dan kolom isian tidak disentuh.</p></li>
+      <li><span class="n">LANGKAH 3</span><h3>Kalau masih kurang, jadikan gambar</h3><p>Hanya untuk target yang sangat kecil: isi halaman disimpan sebagai gambar, tapi link, bookmark, dan kolom isian tetap berfungsi. Mampat memberi tahu sebelum ini terjadi, dan bisa kamu matikan.</p></li>
+    </ol>
+  </section>
+
+  <section class="sec" id="beda">
+    <div class="sec-h"><span class="eyebrow">Bedanya</span><h2>Yang bikin kesal di kompresor online, tidak ada di sini</h2></div>
+    <div class="vs">
+      <div class="vs-row vs-head"><div>Kompresor online biasa</div><div>Mampat</div></div>
+      <div class="vs-row"><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><span>Hanya pilihan rendah, sedang, atau tinggi</span></div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>Ketik ukuran pasti, sampai satuan KB</span></div></div>
+      <div class="vs-row"><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><span>File harus diunggah ke server orang lain</span></div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>Diproses di perangkatmu, tidak ada yang diunggah</span></div></div>
+      <div class="vs-row"><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><span>Batas ukuran file dan kuota harian untuk akun gratis</span></div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>Tanpa batas, tanpa akun</span></div></div>
+      <div class="vs-row"><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><span>Lama menunggu upload lalu download lagi</span></div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>Langsung diproses, tetap jalan tanpa internet</span></div></div>
+      <div class="vs-row"><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><span>Baru tahu hasilnya buram setelah diunduh</span></div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>Pratinjau kualitas sebelum menekan tombol</span></div></div>
+      <div class="vs-row"><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><span>Iklan, pop-up, dan ajakan berlangganan</span></div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>Tanpa iklan</span></div></div>
+      <div class="vs-row"><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><span>Hasil cuma turun sedikit tanpa penjelasan</span></div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>Rincian isi file dan batas terkecil yang mungkin</span></div></div>
+      <div class="vs-row"><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><span>Teks atau link bisa rusak setelah dikompres</span></div><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>Teks, link, bookmark, dan kolom isian tetap utuh</span></div></div>
+    </div>
+  </section>
+
+  <section class="sec" id="faq">
+    <div class="sec-h"><span class="eyebrow">FAQ</span><h2>Yang sering ditanyakan</h2></div>
+    <div class="faq">
+      <details><summary>Apakah file saya diunggah ke server?</summary><p>Tidak. PDF dibaca dan dikompres langsung oleh browser di perangkat kamu. Tidak ada salinan yang dikirim atau disimpan di tempat lain.</p></details>
+      <details><summary>Apakah teks dan link masih bisa dipakai setelah dikompres?</summary><p>Ya. Mampat hanya mengecilkan gambar di dalam PDF, jadi teks tetap bisa dipilih dan dicari, dan link, bookmark, serta kolom isian tetap berfungsi. Hanya kalau targetnya terlalu kecil untuk dicapai dengan cara itu, isi halaman diubah jadi gambar. Itu pun link, bookmark, dan kolom isian tetap ada, dan Mampat memberi tahu sebelum memprosesnya. Nyalakan "Wajib jaga teks" kalau kamu tidak mau ini terjadi sama sekali.</p></details>
+      <details><summary>Kenapa PDF saya cuma bisa turun sedikit?</summary><p>Lihat bagian "Isi file" setelah memilih PDF. Kalau isinya kebanyakan teks dan font, tidak banyak yang bisa dikecilkan tanpa mengubah halaman jadi gambar. Mampat menunjukkan batas terkecil yang masih menjaga teks, jadi kamu tahu alasannya.</p></details>
+      <details><summary>Bagaimana dengan PDF yang ada tanda tangan digitalnya?</summary><p>Tanda tangan digital mengunci isi file. Mengubah apa pun, termasuk mengompres dengan alat apa saja, membuat tanda tangannya tidak sah lagi. Mampat mendeteksinya dan memberi peringatan sebelum kamu memproses. Tampilan tanda tangan di halaman tetap ada.</p></details>
+      <details><summary>Bisa dipakai tanpa internet?</summary><p>Bisa. Setelah situsnya dibuka sekali, Mampat tersimpan di browser dan tetap jalan walaupun offline. Di Chrome atau Edge kamu juga bisa menekan "Pasang aplikasi" supaya Mampat muncul seperti aplikasi biasa.</p></details>
+      <details><summary>Kenapa hasilnya sedikit di bawah target, bukan persis?</summary><p>Mampat menyisakan sedikit ruang supaya hasilnya tidak pernah melewati batas. Di antara pengaturan yang muat, yang dipilih selalu yang kualitasnya paling tinggi.</p></details>
+      <details><summary>Seberapa besar file yang bisa diproses?</summary><p>Tergantung memori perangkat. File ratusan MB biasanya lancar di laptop. Di HP, file besar tetap bisa, tapi prosesnya lebih lama.</p></details>
+      <details><summary>Target saya tidak tercapai. Harus bagaimana?</summary><p>Nyalakan Hitam-putih di pengaturan lanjutan, hapus halaman yang tidak perlu, atau naikkan targetnya. Sebagai patokan, satu halaman A4 hasil scan yang masih enak dibaca butuh sekitar 30–60 KB.</p></details>
+      <details><summary>Bisa untuk PDF yang dikunci kata sandi?</summary><p>Belum. Buka dulu kuncinya dengan aplikasi yang membuatnya, lalu kompres file yang sudah tidak terkunci.</p></details>
+    </div>
+  </section>
+
+  <mampat-foot data-tool="kompres"></mampat-foot>
+</div>
+
+<div id="dragov" class="dragov" hidden><div>Lepaskan PDF-nya</div></div>
+<div id="toasts" class="toasts" aria-live="assertive"></div>
+
+<script>
+(function () {
+  "use strict";
+  const M = window.Mampat;
+  const $ = (id) => document.getElementById(id);
+  const { KB, MB } = M;
+  // ---------- library PDF dimuat di belakang layar, setelah halaman tampil ----------
+  const { LIB, loadScript, whenIdle } = M;
+  let PDFDocument, PDFName, PDFDict, PDFArray, PDFRef, PDFStream, PDFRawStream, PDFNumber, decodePDFRawStream;
+  const nmCache = {};
+  const NM = (s) => nmCache[s] || (nmCache[s] = PDFName.of(s));
+  let libsPromise = null;
+  function ensureLibs() {
+    if (!libsPromise) {
+      libsPromise = Promise.all([
+        window.pdfjsLib ? null : loadScript(LIB.pdfjs),
+        window.PDFLib ? null : loadScript(LIB.pdflib),
+      ]).then(() => {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = LIB.worker;
+        ({ PDFDocument, PDFName, PDFDict, PDFArray, PDFRef, PDFStream, PDFRawStream, PDFNumber, decodePDFRawStream } = window.PDFLib);
+      }).catch((e) => { libsPromise = null; throw e; });
+    }
+    return libsPromise;
+  }
+  // Unduh library di awal tanpa langsung diproses (preload), supaya tampilan pertama tidak tersendat.
+  // Library baru diproses saat pengguna mulai berinteraksi; unduhannya sudah ada di cache.
+  function preload(href) {
+    const l = document.createElement("link"); l.rel = "preload"; l.as = "script"; l.href = href; l.crossOrigin = "anonymous"; document.head.appendChild(l);
+  }
+  whenIdle(() => { preload(LIB.pdfjs); preload(LIB.pdflib); });
+  const warm = () => ensureLibs().then(() => whenIdle(() => {
+    const l = document.createElement("link"); l.rel = "prefetch"; l.href = LIB.worker; l.crossOrigin = "anonymous"; document.head.appendChild(l);
+  })).catch(() => {});
+  ["pointerdown", "keydown", "dragenter", "touchstart"].forEach((ev) => window.addEventListener(ev, warm, { once: true, passive: true }));
+  ["pointerenter", "focus"].forEach((ev) => document.getElementById("drop").addEventListener(ev, warm, { once: true, passive: true }));
+
+  // ---------- analytics: mampat/kompres/<aksi> ----------
+  const track = (name, params) => M.track("kompres", name, params);
+  const { bucket } = M;
+
+  // ---------- state ----------
+  const S = {
+    file: null, bytes: null, pdf: null, n: 0,
+    unit: "KB", target: 500 * KB,
+    maxDpi: 150, gray: false, keepText: false,
+    lib: null, anat: null, lossless: null, nonImg: 0,
+    rSamples: null, previewSrc: null, smartSamples: null,
+    estCache: new Map(), encCache: new Map(),
+    busy: false, cancelled: false, result: null, plan: null,
+  };
+  const store = { get(k) { try { return localStorage.getItem("mampat." + k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem("mampat." + k, v); } catch (e) {} } };
+  { const t = parseInt(store.get("target"), 10); if (t > 0) S.target = t; const u = store.get("unit"); if (u === "KB" || u === "MB") S.unit = u; }
+
+  // ---------- formatting ----------
+  const { nf, fmt, toast, tick, esc } = M;
+  function parseNum(s) { s = String(s).trim().replace(/\s/g, ""); if (/,/.test(s)) s = s.replace(/\./g, "").replace(",", "."); const v = parseFloat(s); return isFinite(v) && v > 0 ? v : null; }
+  function niceRound(b) {
+    if (b < 100 * KB) return Math.max(10 * KB, Math.round(b / (5 * KB)) * 5 * KB);
+    if (b < MB) return Math.round(b / (10 * KB)) * 10 * KB;
+    if (b < 10 * MB) return Math.round(b / (0.1 * MB)) * 0.1 * MB;
+    if (b < 100 * MB) return Math.round(b / MB) * MB;
+    return Math.round(b / (5 * MB)) * 5 * MB;
+  }
+
+  // ---------- target controls ----------
+  const R_MIN = 20 * KB;
+  function rMax() { return S.file ? Math.max(S.file.size, 60 * KB) : 500 * MB; }
+  function posOf(b) { const lo = Math.log(R_MIN), hi = Math.log(rMax()); return Math.max(0, Math.min(1000, Math.round((Math.log(Math.max(b, 1)) - lo) / (hi - lo) * 1000))); }
+  function bytesAt(p) { const lo = Math.log(R_MIN), hi = Math.log(rMax()); return Math.exp(lo + (hi - lo) * p / 1000); }
+  function numText(b, unit) { const v = b / (unit === "MB" ? MB : KB); return nf(unit === "MB" ? (v < 10 ? 2 : 1) : (v < 10 ? 1 : 0)).format(v); }
+
+  function renderTicks() {
+    const marks = [50 * KB, 100 * KB, 200 * KB, 500 * KB, MB, 2 * MB, 5 * MB, 10 * MB, 20 * MB, 50 * MB, 100 * MB, 200 * MB, 500 * MB];
+    const hi = rMax();
+    let inRange = marks.filter((m) => posOf(m) > 90 && posOf(m) < 880);
+    while (inRange.length > 5) inRange = inRange.filter((_, i) => i % 2 === 0);
+    const t = $("ticks"); t.textContent = "";
+    const add = (b, cls) => { const s = document.createElement("span"); s.textContent = fmt(b).replace(",00", ""); s.style.left = posOf(b) / 10 + "%"; if (cls) s.className = cls; t.appendChild(s); };
+    add(R_MIN, "edge-l"); inRange.forEach((m) => add(m)); add(hi, "edge-r");
+    if (S.file) t.lastChild.textContent = "asli";
+    requestAnimationFrame(fitTicks);
+  }
+  // sembunyikan label skala yang saling bertumpuk di layar sempit
+  function fitTicks() {
+    const t = $("ticks"), W = t.clientWidth, spans = [...t.children];
+    if (!W || !spans.length) return;
+    spans.forEach((s) => { s.hidden = false; });
+    const edgeR = spans[spans.length - 1], rLeft = W - edgeR.offsetWidth;
+    let lastRight = -Infinity;
+    for (const s of spans) {
+      const w = s.offsetWidth, pos = parseFloat(s.style.left) / 100 * W;
+      const l = s.classList.contains("edge-l") ? pos : s === edgeR ? pos - w : pos - w / 2;
+      if (s !== edgeR && (l < lastRight + 10 || (s.classList.contains("edge-l") ? false : l + w > rLeft - 10))) { s.hidden = true; continue; }
+      lastRight = l + w;
+    }
+  }
+  let rsz = null;
+  window.addEventListener("resize", () => { clearTimeout(rsz); rsz = setTimeout(fitTicks, 120); });
+  function renderChips() {
+    const presets = [100 * KB, 200 * KB, 500 * KB, MB, 2 * MB, 5 * MB, 10 * MB, 25 * MB, 100 * MB];
+    const c = $("chips"); c.textContent = "";
+    presets.filter((p) => !S.file || p < S.file.size).slice(-7).forEach((p) => {
+      const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.dataset.b = p; b.textContent = fmt(p).replace(",00", "");
+      b.setAttribute("aria-pressed", String(Math.abs(p - S.target) < 1)); c.appendChild(b);
+    });
+  }
+  function syncTarget(opts) {
+    opts = opts || {};
+    if (!opts.fromNum) $("tNum").value = numText(S.target, S.unit);
+    $("uKB").setAttribute("aria-pressed", S.unit === "KB"); $("uMB").setAttribute("aria-pressed", S.unit === "MB");
+    const p = posOf(S.target);
+    if (!opts.fromRange) $("tRange").value = p;
+    $("tRange").style.setProperty("--p", p / 10 + "%");
+    $("tHuman").textContent = "Maksimal " + fmt(S.target);
+    const d = $("delta");
+    if (S.file) {
+      if (S.target >= S.file.size) { d.textContent = "≥ ukuran asli"; d.className = "delta up"; }
+      else { d.textContent = "−" + Math.round((1 - S.target / S.file.size) * 100) + "% dari asli"; d.className = "delta"; }
+    } else d.textContent = "";
+    [...$("chips").children].forEach((b) => b.setAttribute("aria-pressed", String(Math.abs(+b.dataset.b - S.target) < 1)));
+    store.set("target", Math.round(S.target)); store.set("unit", S.unit);
+    updateGo();
+    schedulePredict();
+  }
+  $("tNum").addEventListener("input", () => { const v = parseNum($("tNum").value); if (v) { S.target = Math.round(v * (S.unit === "MB" ? MB : KB)); syncTarget({ fromNum: true }); } else updateGo(); });
+  $("tNum").addEventListener("blur", () => syncTarget());
+  $("tNum").addEventListener("keydown", (e) => { if (e.key === "Enter" && !$("go").disabled) run(); });
+  $("tRange").addEventListener("input", () => {
+    S.target = Math.round(niceRound(bytesAt(+$("tRange").value)));
+    S.unit = S.target >= MB ? "MB" : "KB";
+    syncTarget({ fromRange: true });
+  });
+  function setUnit(u) { const v = parseNum($("tNum").value) || 1; S.unit = u; S.target = Math.round(v * (u === "MB" ? MB : KB)); syncTarget({ fromNum: true }); $("tNum").focus(); }
+  $("uKB").addEventListener("click", () => setUnit("KB"));
+  $("uMB").addEventListener("click", () => setUnit("MB"));
+  $("chips").addEventListener("click", (e) => { const b = e.target.closest(".chip"); if (!b) return; S.target = +b.dataset.b; S.unit = S.target >= MB ? "MB" : "KB"; syncTarget(); });
+
+  $("dpiSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; S.maxDpi = +b.dataset.dpi; [...$("dpiSeg").children].forEach((x) => x.setAttribute("aria-pressed", String(x === b))); updateAdvCur(); schedulePredict(); });
+  $("gray").addEventListener("change", () => { S.gray = $("gray").checked; S.estCache.clear(); updateAdvCur(); schedulePredict(); });
+  $("keepText").addEventListener("change", () => { S.keepText = $("keepText").checked; updateAdvCur(); schedulePredict(); });
+  function updateAdvCur() { $("advCur").textContent = S.maxDpi + " dpi" + (S.gray ? " · hitam-putih" : "") + (S.keepText ? " · jaga teks" : ""); }
+
+  function updateGo() {
+    const blocked = S.anat && S.anat.encrypted;
+    const ok = !!S.file && !!parseNum($("tNum").value) && !S.busy && !blocked && !!S.anat;
+    $("go").disabled = !ok;
+    $("goText").textContent = !S.file ? "Pilih PDF dulu" : blocked ? "PDF terkunci" : S.busy ? "Sedang memproses…" : !S.anat ? "Menganalisis PDF…" : "Mampatkan ke " + fmt(S.target);
+  }
+
+  function show(id) { for (const s of ["sEmpty", "sPrev", "sWork", "sDone"]) $(s).hidden = s !== id; }
+
+  // ---------- file loading ----------
+  const drop = $("drop");
+  drop.addEventListener("click", () => $("file").click());
+  drop.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("file").click(); } });
+  $("fChange").addEventListener("click", () => $("file").click());
+  $("file").addEventListener("change", (e) => { const f = e.target.files[0]; e.target.value = ""; if (f) loadFile(f); });
+  let dragDepth = 0;
+  window.addEventListener("dragenter", (e) => { if (e.dataTransfer && [...e.dataTransfer.types].includes("Files")) { dragDepth++; $("dragov").hidden = false; } });
+  window.addEventListener("dragleave", () => { dragDepth = Math.max(0, dragDepth - 1); if (!dragDepth) $("dragov").hidden = true; });
+  window.addEventListener("dragover", (e) => e.preventDefault());
+  window.addEventListener("drop", (e) => { e.preventDefault(); dragDepth = 0; $("dragov").hidden = true; const f = e.dataTransfer.files[0]; if (f) loadFile(f); });
+  window.addEventListener("paste", (e) => { const f = [...(e.clipboardData ? e.clipboardData.files : [])].find((x) => /pdf/i.test(x.type) || /\.pdf$/i.test(x.name)); if (f) loadFile(f); });
+
+  let loadSeq = 0;
+  async function loadFile(f) {
+    if (S.busy) { toast("Tunggu proses yang sedang berjalan selesai dulu."); return; }
+    if (!/\.pdf$/i.test(f.name) && f.type !== "application/pdf") { toast("Itu bukan PDF. Pilih file berakhiran .pdf.", true); return; }
+    const seq = ++loadSeq;
+    if (S.pdf) { try { S.pdf.destroy(); } catch (e) {} }
+    Object.assign(S, { file: f, bytes: null, pdf: null, n: 0, lib: null, anat: null, lossless: null, nonImg: 0, rSamples: null, smartSamples: null, result: null, plan: null });
+    S.estCache.clear(); S.encCache.clear(); S._byRef = null;
+    $("fName").textContent = f.name; $("fMeta").textContent = fmt(f.size) + " · membaca…";
+    drop.hidden = true; $("fcard").hidden = false; $("anat").hidden = true; $("step1").classList.add("done");
+    const tctx = $("thumb").getContext("2d"); tctx.clearRect(0, 0, 56, 72);
+    if (S.target >= f.size) S.target = Math.max(R_MIN, Math.round(niceRound(f.size * 0.3)));
+    S.unit = S.target >= MB ? "MB" : "KB";
+    renderTicks(); renderChips(); syncTarget();
+    show("sPrev"); $("cmpBusy").hidden = false; $("imgA").removeAttribute("src"); $("imgB").removeAttribute("src"); setPred(null);
+    try {
+      S.bytes = new Uint8Array(await f.arrayBuffer());
+      if (!window.PDFLib || !window.pdfjsLib || !PDFDocument) {
+        $("cmpBusy").textContent = "Menyiapkan mesin PDF…";
+        try { await ensureLibs(); } catch (e) { if (seq === loadSeq) { toast("Mesin PDF gagal dimuat. Periksa koneksi internet, lalu coba lagi.", true); resetFile(); } return; }
+        $("cmpBusy").textContent = "Menganalisis halaman…";
+      }
+      if (seq !== loadSeq) return;
+      const pdf = await pdfjsLib.getDocument({ data: S.bytes.slice() }).promise;
+      if (seq !== loadSeq) { pdf.destroy(); return; }
+      S.pdf = pdf; S.n = pdf.numPages;
+      $("fMeta").textContent = fmt(f.size) + " · " + S.n + " halaman";
+      track("pilih", { halaman: S.n, ukuran: bucket(f.size) });
+      await drawThumb();
+      await renderFirstPage();
+      $("cmpBusy").textContent = "Membaca isi file…";
+      await analyze();
+      if (seq !== loadSeq) return;
+      updateGo();
+      schedulePredict(0);
+    } catch (err) {
+      console.error(err);
+      if (seq !== loadSeq) return;
+      const pw = err && err.name === "PasswordException";
+      toast(pw ? "PDF ini dikunci kata sandi. Buka kuncinya dulu, lalu coba lagi." : "PDF ini tidak bisa dibaca. Mungkin filenya rusak.", true);
+      resetFile();
+    }
+  }
+  function resetFile() {
+    if (S.pdf) { try { S.pdf.destroy(); } catch (e) {} }
+    Object.assign(S, { file: null, bytes: null, pdf: null, n: 0, lib: null, anat: null, rSamples: null, smartSamples: null, result: null });
+    drop.hidden = false; $("fcard").hidden = true; $("anat").hidden = true; $("step1").classList.remove("done");
+    renderTicks(); renderChips(); syncTarget(); show("sEmpty");
+  }
+  async function drawThumb() {
+    const page = await S.pdf.getPage(1);
+    const vp1 = page.getViewport({ scale: 1 });
+    const c = $("thumb"), ratio = window.devicePixelRatio || 1;
+    const s = Math.min(56 / vp1.width, 72 / vp1.height) * ratio;
+    const vp = page.getViewport({ scale: s });
+    c.width = Math.round(vp.width); c.height = Math.round(vp.height);
+    const ctx = c.getContext("2d"); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, c.width, c.height);
+    await page.render({ canvasContext: ctx, viewport: vp }).promise;
+    $("cmp").style.setProperty("--ar", (vp1.width / vp1.height).toFixed(4));
+  }
+
+  // ---------- canvas helpers ----------
+  const DPI_LEVELS = [300, 250, 200, 170, 150, 130, 110, 96, 84, 72, 62, 54, 46, 40, 34, 28, 24];
+  const QUALS = [0.92, 0.85, 0.78, 0.7, 0.62, 0.55, 0.48, 0.4, 0.33, 0.26, 0.2, 0.14, 0.09];
+  const SAMPLE_DPI = 200, MAX_PIXELS = 20e6, PAGE_OVERHEAD = 700, DOC_OVERHEAD = 1500;
+
+  function canvasToJpeg(canvas, q) { return new Promise((res, rej) => canvas.toBlob((b) => b ? b.arrayBuffer().then((a) => res(new Uint8Array(a))) : rej(new Error("encode")), "image/jpeg", q)); }
+  function grayCopy(src) { const c = document.createElement("canvas"); c.width = src.width; c.height = src.height; const x = c.getContext("2d", { willReadFrequently: true }); x.drawImage(src, 0, 0); toGray(x, c.width, c.height); return c; }
+  function toGray(ctx, w, h) { const img = ctx.getImageData(0, 0, w, h), d = img.data; for (let i = 0; i < d.length; i += 4) { const y = (d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114) | 0; d[i] = d[i + 1] = d[i + 2] = y; } ctx.putImageData(img, 0, 0); }
+  function downscale(src, f) {
+    if (f >= 0.999) return src;
+    const c = document.createElement("canvas"); c.width = Math.max(1, Math.round(src.width * f)); c.height = Math.max(1, Math.round(src.height * f));
+    const x = c.getContext("2d"); x.imageSmoothingQuality = "high"; x.drawImage(src, 0, 0, c.width, c.height); return c;
+  }
+  function freeCanvas(c) { if (c && c.getContext) { c.width = c.height = 0; } }
+  function scaleFor(page, dpi) { const v = page.getViewport({ scale: 1 }); let s = dpi / 72; const px = v.width * v.height * s * s; if (px > MAX_PIXELS) s *= Math.sqrt(MAX_PIXELS / px); return s; }
+  async function renderPage(i, dpi, gray, noAnnots) {
+    const page = await S.pdf.getPage(i);
+    const scale = scaleFor(page, dpi);
+    const vp = noAnnots ? page.getViewport({ scale, rotation: 0 }) : page.getViewport({ scale });
+    const c = document.createElement("canvas");
+    c.width = Math.max(1, Math.round(vp.width)); c.height = Math.max(1, Math.round(vp.height));
+    const ctx = c.getContext("2d", { willReadFrequently: !!gray });
+    ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, c.width, c.height);
+    const params = { canvasContext: ctx, viewport: vp };
+    if (noAnnots && pdfjsLib.AnnotationMode) params.annotationMode = pdfjsLib.AnnotationMode.DISABLE;
+    await page.render(params).promise;
+    if (gray) toGray(ctx, c.width, c.height);
+    const pt = page.getViewport({ scale: 1 });
+    const view = page.view.slice();
+    page.cleanup();
+    return { canvas: c, wPt: pt.width, hPt: pt.height, view };
+  }
+  async function renderFirstPage() {
+    const r = await renderPage(1, SAMPLE_DPI, false);
+    S.rSamples = { color: [r.canvas], gray: null, full: false };
+    const blob = await new Promise((res) => r.canvas.toBlob(res, "image/jpeg", 0.95));
+    if (S.previewSrc) URL.revokeObjectURL(S.previewSrc);
+    S.previewSrc = URL.createObjectURL(blob);
+    $("imgA").src = S.previewSrc;
+  }
+
+  // ---------- PDF anatomy (pdf-lib) ----------
+  function num(o) { return o instanceof PDFNumber ? o.asNumber() : (o && typeof o.asNumber === "function" ? o.asNumber() : 0); }
+  function colorInfo(cs) {
+    if (!cs) return null;
+    if (cs instanceof PDFName) {
+      if (cs === NM("DeviceRGB")) return { n: 3, obj: cs };
+      if (cs === NM("DeviceGray")) return { n: 1, obj: cs };
+      return null;
+    }
+    if (cs instanceof PDFArray && cs.size() > 0) {
+      const fam = cs.lookup(0);
+      if (fam === NM("ICCBased")) {
+        const st = cs.lookup(1);
+        const n = st && st.dict ? num(st.dict.lookup(NM("N"))) : 0;
+        return n === 1 || n === 3 ? { n, obj: cs } : null;
+      }
+      if (fam === NM("CalRGB")) return { n: 3, obj: cs };
+      if (fam === NM("CalGray")) return { n: 1, obj: cs };
+    }
+    return null;
+  }
+  function imageInfo(ref, s) {
+    const d = s.dict, bytes = s.contents.length;
+    const w = num(d.lookup(NM("Width"))), h = num(d.lookup(NM("Height")));
+    const base = { ref, w, h, bytes, ok: false };
+    if (!w || !h) return base;
+    const im = d.lookup(NM("ImageMask"));
+    if (im && String(im) === "true") return base;
+    if (d.has(NM("Decode"))) return base;
+    if (d.lookup(NM("Mask")) instanceof PDFArray) return base;
+    const fRaw = d.lookup(NM("Filter")), pRaw = d.lookup(NM("DecodeParms"));
+    const filters = [], parmsList = [];
+    if (fRaw instanceof PDFName) { filters.push(fRaw); parmsList.push(pRaw instanceof PDFDict ? pRaw : null); }
+    else if (fRaw instanceof PDFArray) for (let i = 0; i < fRaw.size(); i++) { filters.push(fRaw.lookup(i)); parmsList.push(pRaw instanceof PDFArray ? pRaw.lookupMaybe(i, PDFDict) || null : null); }
+    else return base;
+    const filt = filters[filters.length - 1], parms = parmsList[parmsList.length - 1];
+    const pre = filters.slice(0, -1);
+    const PRE_OK = ["ASCII85Decode", "ASCIIHexDecode", "FlateDecode", "LZWDecode", "RunLengthDecode"].map(NM);
+    if (pre.some((f) => !PRE_OK.includes(f))) return base;
+    if (pre.length && parmsList.slice(0, -1).some((x) => x)) return base;
+    const cs = colorInfo(d.lookup(NM("ColorSpace")));
+    if (!cs) return base;
+    const info = Object.assign(base, { comps: cs.n, csObj: cs.obj, predictor: 1, pcolors: cs.n, pcolumns: w, pre });
+    if (filt === NM("DCTDecode")) {
+      if (parms instanceof PDFDict && parms.has(NM("ColorTransform"))) return base;
+      info.kind = "jpeg";
+    }
+    else if (filt === NM("FlateDecode")) {
+      if (num(d.lookup(NM("BitsPerComponent"))) !== 8) return base;
+      info.kind = "flate";
+      if (parms instanceof PDFDict) {
+        info.predictor = num(parms.lookup(NM("Predictor"))) || 1;
+        info.pcolors = num(parms.lookup(NM("Colors"))) || 1;
+        info.pcolumns = num(parms.lookup(NM("Columns"))) || 1;
+        const pb = num(parms.lookup(NM("BitsPerComponent"))) || 8;
+        if (info.predictor > 1 && (info.predictor < 10 || pb !== 8 || info.pcolors !== cs.n || info.pcolumns !== w)) return base;
+      }
+      if (w * h > 60e6) return base;
+    } else return base;
+    if (bytes < 10 * KB) { info.small = true; return info; }
+    info.ok = true;
+    return info;
+  }
+  function pageAnnots(page) {
+    const a = page.node.lookup(NM("Annots"));
+    const out = [];
+    if (a instanceof PDFArray) for (let i = 0; i < a.size(); i++) { const d = a.lookup(i); if (d instanceof PDFDict) out.push(d); }
+    return out;
+  }
+  async function analyze() {
+    const A = { ok: false, encrypted: false, imgBytes: 0, fontBytes: 0, images: [], links: 0, signed: false, outline: false, form: false, pagePts: 0 };
+    let doc = null;
+    if (S.file.size <= 700 * MB) {
+      try { doc = await PDFDocument.load(S.bytes, { ignoreEncryption: true, updateMetadata: false }); } catch (e) { doc = null; }
+    }
+    if (doc) {
+      A.encrypted = doc.isEncrypted;
+      for (const [ref, obj] of doc.context.enumerateIndirectObjects()) {
+        if (obj instanceof PDFRawStream) {
+          const d = obj.dict, st = d.get(NM("Subtype")), len = obj.contents.length;
+          if (st === NM("Image")) { A.imgBytes += len; A.images.push(imageInfo(ref, obj)); }
+          else if (d.has(NM("Length1")) || d.has(NM("Length2")) || st === NM("Type1C") || st === NM("CIDFontType0C") || st === NM("OpenType")) A.fontBytes += len;
+        } else if (obj instanceof PDFDict) {
+          if (obj.get(NM("FT")) === NM("Sig") && obj.has(NM("V"))) A.signed = true;
+        }
+        if (A.images.length % 200 === 199) await tick();
+      }
+      try {
+        A.outline = !!doc.catalog.get(NM("Outlines"));
+        A.form = !!doc.catalog.get(NM("AcroForm"));
+        for (const p of doc.getPages()) {
+          const { width, height } = p.getSize();
+          A.pagePts = Math.max(A.pagePts, width, height);
+          for (const an of pageAnnots(p)) if (an.get(NM("Subtype")) === NM("Link")) A.links++;
+        }
+      } catch (e) {}
+      A.ok = !A.encrypted;
+    }
+    if (!A.pagePts) A.pagePts = 842;
+    S.lib = A.ok ? doc : null;
+    S.anat = A;
+    if (A.ok) {
+      try { S.lossless = await buildLossless(); } catch (e) { S.lossless = null; }
+    }
+    const base = S.lossless ? S.lossless.length : S.file.size;
+    const eligible = A.images.filter((i) => i.ok);
+    S.nonImg = Math.max(0, base - eligible.reduce((a, i) => a + i.bytes, 0));
+    renderAnatomy();
+  }
+
+  const ico = {
+    link: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.6 0l3-3a4 4 0 0 0-5.6-5.6l-1 1M14 10a4 4 0 0 0-5.6 0l-3 3a4 4 0 0 0 5.6 5.6l1-1"/></svg>',
+    mark: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg>',
+    form: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 10h6M7 14h10"/></svg>',
+    sig: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17c3-6 5-9 7-9s-1 9 2 9 3-4 5-4 2 3 4 3"/></svg>',
+    lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
+    info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>',
+    ok: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>',
+    warn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 8v5M12 16.5h.01"/><circle cx="12" cy="12" r="9"/></svg>',
+    img: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="m3 16 5-5 4 4 3-3 6 6"/></svg>',
+  };
+  function renderAnatomy() {
+    const A = S.anat, total = S.file.size;
+    const img = Math.min(A.imgBytes, total), font = Math.min(A.fontBytes, total - img), oth = Math.max(0, total - img - font);
+    const pct = (x) => total ? Math.round(x / total * 100) : 0;
+    $("aImg").style.width = (img / total * 100) + "%"; $("aFont").style.width = (font / total * 100) + "%"; $("aOth").style.width = (oth / total * 100) + "%";
+    const leg = [["a-img", "Gambar", img], ["a-font", "Font", font], ["a-oth", "Teks &amp; lainnya", oth]].filter((x) => pct(x[2]) > 0);
+    $("anatLeg").innerHTML = leg.map((x) => '<span><b class="' + x[0] + '"></b>' + x[1] + ' ' + pct(x[2]) + '% · ' + fmt(x[2]) + '</span>').join("");
+    const tags = [];
+    if (A.encrypted) tags.push('<span class="tag warn">' + ico.lock + 'Dikunci izin</span>');
+    if (A.signed) tags.push('<span class="tag warn">' + ico.sig + 'Tanda tangan digital</span>');
+    if (A.links) tags.push('<span class="tag good">' + ico.link + A.links + ' link</span>');
+    if (A.outline) tags.push('<span class="tag good">' + ico.mark + 'Bookmark</span>');
+    if (A.form) tags.push('<span class="tag good">' + ico.form + 'Kolom isian</span>');
+    const nImg = A.images.length;
+    if (nImg) tags.push('<span class="tag">' + ico.img + nImg + ' gambar</span>');
+    $("anatTags").innerHTML = tags.join("");
+    $("anatHint").textContent = !A.ok ? "" : img / total > 0.5 ? "Banyak yang bisa dikecilkan" : img / total > 0.15 ? "Sebagian bisa dikecilkan" : "Kebanyakan teks & font";
+    $("anat").hidden = false;
+  }
+
+  // ---------- image recompression (keeps text) ----------
+  function pngUnpredict(data, bpp, columns) {
+    const rowLen = bpp * columns, rows = Math.floor(data.length / (rowLen + 1));
+    const out = new Uint8Array(rows * rowLen);
+    for (let r = 0; r < rows; r++) {
+      const ft = data[r * (rowLen + 1)], src = r * (rowLen + 1) + 1, dst = r * rowLen, up = dst - rowLen;
+      for (let i = 0; i < rowLen; i++) {
+        const x = data[src + i];
+        const a = i >= bpp ? out[dst + i - bpp] : 0, b = r > 0 ? out[up + i] : 0, c = r > 0 && i >= bpp ? out[up + i - bpp] : 0;
+        let v;
+        switch (ft) {
+          case 0: v = x; break;
+          case 1: v = x + a; break;
+          case 2: v = x + b; break;
+          case 3: v = x + ((a + b) >> 1); break;
+          case 4: { const p = a + b - c, pa = Math.abs(p - a), pb = Math.abs(p - b), pc = Math.abs(p - c); v = x + (pa <= pb && pa <= pc ? a : pb <= pc ? b : c); break; }
+          default: v = x;
+        }
+        out[dst + i] = v & 255;
+      }
+    }
+    return out;
+  }
+  // buka kompresi Flate memakai fitur bawaan browser (jauh lebih cepat), cadangan: pdf-lib
+  async function inflateNative(bytes) {
+    if (typeof DecompressionStream === "undefined") return null;
+    try {
+      const out = new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate")));
+      return new Uint8Array(await out.arrayBuffer());
+    } catch (e) { return null; }
+  }
+  async function decodeJpeg(bytes) {
+    const blob = new Blob([bytes], { type: "image/jpeg" });
+    try { return await createImageBitmap(blob, { imageOrientation: "none" }); } catch (e) {}
+    try { return await createImageBitmap(blob); } catch (e) {}
+    const url = URL.createObjectURL(blob);
+    try { const im = new Image(); im.src = url; await im.decode(); return im; } finally { setTimeout(() => URL.revokeObjectURL(url), 1000); }
+  }
+  function jpegBytes(stream, info) {
+    if (!info.pre || !info.pre.length) return stream.contents;
+    const arr = PDFArray.withContext(stream.dict.context);
+    info.pre.forEach((f) => arr.push(f));
+    const fake = { lookup: (k) => (k === NM("Filter") ? arr : undefined) };
+    return decodePDFRawStream({ dict: fake, contents: stream.contents }).decode();
+  }
+  async function imageToCanvas(stream, info, maxSide) {
+    let src;
+    if (info.kind === "jpeg") src = await decodeJpeg(jpegBytes(stream, info));
+    else {
+      let raw = (!info.pre || !info.pre.length) ? await inflateNative(stream.contents) : null;
+      if (!raw || raw.length < info.w * info.h * info.comps) raw = decodePDFRawStream(stream).decode();
+      if (info.predictor >= 10) raw = pngUnpredict(raw, info.comps, info.w);
+      const W = info.w, H = info.h, n = info.comps;
+      if (raw.length < W * H * n) throw new Error("data gambar tidak lengkap");
+      const c = document.createElement("canvas"); c.width = W; c.height = H;
+      const x = c.getContext("2d"), id = x.createImageData(W, H), o = id.data;
+      if (n === 3) for (let i = 0, j = 0, k = 0; i < W * H; i++, j += 3, k += 4) { o[k] = raw[j]; o[k + 1] = raw[j + 1]; o[k + 2] = raw[j + 2]; o[k + 3] = 255; }
+      else for (let i = 0, k = 0; i < W * H; i++, k += 4) { const v = raw[i]; o[k] = o[k + 1] = o[k + 2] = v; o[k + 3] = 255; }
+      x.putImageData(id, 0, 0);
+      src = c;
+    }
+    const sw = src.width, sh = src.height;
+    const s = Math.min(1, maxSide / Math.max(sw, sh), Math.sqrt(MAX_PIXELS / (sw * sh)));
+    const out = document.createElement("canvas");
+    out.width = Math.max(1, Math.round(sw * s)); out.height = Math.max(1, Math.round(sh * s));
+    const ctx = out.getContext("2d"); ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(src, 0, 0, out.width, out.height);
+    if (src.close) src.close(); else freeCanvas(src);
+    return out;
+  }
+  const lpx = (dpi) => Math.round(dpi * S.anat.pagePts / 72);
+  // hasil olahan tiap gambar disimpan, dipakai ulang oleh pratinjau dan proses akhir
+  const encPending = new Map();
+  async function encodeImage(info, dpi, q, gray) {
+    const key = info.ref.tag + "|" + dpi + "|" + q + "|" + (gray ? 1 : 0);
+    if (S.encCache.has(key)) return S.encCache.get(key);
+    if (encPending.has(key)) return encPending.get(key);
+    const job = (async () => {
+      let c;
+      try { c = await imageToCanvas(S.lib.context.lookup(info.ref), info, lpx(dpi)); } catch (e) { return null; }
+      if (gray) { const g = grayCopy(c); freeCanvas(c); c = g; }
+      const enc = { bytes: await canvasToJpeg(c, q), w: c.width, h: c.height };
+      freeCanvas(c);
+      S.encCache.set(key, enc);
+      return enc;
+    })();
+    encPending.set(key, job);
+    try { return await job; } finally { encPending.delete(key); }
+  }
+  async function recompress(ctx, info, dpi, q, gray) {
+    const enc = await encodeImage(info, dpi, q, gray);
+    if (enc) applyEnc(ctx, info.ref, info, enc, gray);
+  }
+  function applyEnc(ctx, ref, info, enc, gray) {
+    const stream = ctx.lookup(ref);
+    if (!(stream instanceof PDFRawStream)) return;
+    if (enc.bytes.length >= stream.contents.length * 0.97) return;
+    const d = stream.dict.clone(ctx);
+    d.set(NM("Filter"), NM("DCTDecode"));
+    d.delete(NM("DecodeParms"));
+    d.set(NM("Width"), PDFNumber.of(enc.w));
+    d.set(NM("Height"), PDFNumber.of(enc.h));
+    d.set(NM("BitsPerComponent"), PDFNumber.of(8));
+    d.set(NM("ColorSpace"), info.comps === 3 && !gray ? info.csObj : NM("DeviceRGB"));
+    d.set(NM("Length"), PDFNumber.of(enc.bytes.length));
+    ctx.assign(ref, PDFRawStream.of(d, enc.bytes));
+  }
+
+  // ---------- housekeeping ----------
+  function stripJunk(doc) {
+    for (const p of doc.getPages()) { p.node.delete(NM("Thumb")); p.node.delete(NM("PieceInfo")); }
+    doc.catalog.delete(NM("PieceInfo"));
+  }
+  function gc(doc) {
+    const ctx = doc.context, seen = new Set(), stack = [];
+    const ti = ctx.trailerInfo;
+    if (ti.Root) stack.push(ti.Root);
+    if (ti.Info) stack.push(ti.Info);
+    while (stack.length) {
+      const o = stack.pop();
+      if (!o) continue;
+      if (o instanceof PDFRef) { if (seen.has(o)) continue; seen.add(o); const v = ctx.lookup(o); if (v) stack.push(v); }
+      else if (o instanceof PDFDict) { for (const [, v] of o.entries()) stack.push(v); }
+      else if (o instanceof PDFArray) { for (let i = 0; i < o.size(); i++) stack.push(o.get(i)); }
+      else if (o instanceof PDFStream) stack.push(o.dict);
+    }
+    let removed = 0;
+    for (const [ref] of ctx.enumerateIndirectObjects()) if (!seen.has(ref)) { ctx.delete(ref); removed++; }
+    return removed;
+  }
+  async function loadLib() { return PDFDocument.load(S.bytes, { updateMetadata: false }); }
+  async function finalize(doc) {
+    stripJunk(doc); gc(doc);
+    doc.setProducer("Mampat");
+    return doc.save({ useObjectStreams: true });
+  }
+  async function buildLossless() {
+    const doc = await loadLib();
+    stripJunk(doc); gc(doc);
+    return doc.save({ useObjectStreams: true });
+  }
+
+  // ---------- builders ----------
+  async function buildSmart(dpi, q, gray, onProg) {
+    const doc = await loadLib();
+    const ctx = doc.context, imgs = S.anat.images.filter((i) => i.ok);
+    for (let k = 0; k < imgs.length; k++) {
+      if (S.cancelled) throw new Error("cancelled");
+      await recompress(ctx, imgs[k], dpi, q, gray);
+      onProg((k + 1) / imgs.length);
+      await tick();
+    }
+    return finalize(doc);
+  }
+  // Mode gambar di dalam dokumen asli: link, bookmark, kolom isian tetap ada
+  async function buildRasterInPlace(dpi, q, gray, onPage) {
+    const doc = await loadLib();
+    const ctx = doc.context, pages = doc.getPages();
+    for (let i = 0; i < pages.length; i++) {
+      if (S.cancelled) throw new Error("cancelled");
+      const r = await renderPage(i + 1, dpi, gray, true);
+      const jpg = await canvasToJpeg(r.canvas, q);
+      const w = r.canvas.width, h = r.canvas.height;
+      freeCanvas(r.canvas);
+      const [x1, y1, x2, y2] = r.view;
+      const imgDict = ctx.obj({ Type: "XObject", Subtype: "Image", Width: w, Height: h, ColorSpace: "DeviceRGB", BitsPerComponent: 8, Filter: "DCTDecode", Length: jpg.length });
+      const imgRef = ctx.register(PDFRawStream.of(imgDict, jpg));
+      const content = "q " + (x2 - x1).toFixed(3) + " 0 0 " + (y2 - y1).toFixed(3) + " " + x1.toFixed(3) + " " + y1.toFixed(3) + " cm /MpPg Do Q";
+      const cRef = ctx.register(ctx.flateStream(content));
+      const page = pages[i];
+      page.node.set(NM("Contents"), cRef);
+      page.node.set(NM("Resources"), ctx.obj({ XObject: { MpPg: imgRef } }));
+      page.node.delete(NM("Group"));
+      onPage(i + 1);
+      if (i % 2 === 1) await tick();
+    }
+    return finalize(doc);
+  }
+  async function buildRasterFresh(dpi, q, gray, onPage) {
+    const out = await PDFDocument.create();
+    for (let i = 1; i <= S.n; i++) {
+      if (S.cancelled) throw new Error("cancelled");
+      const r = await renderPage(i, dpi, gray);
+      const jpg = await canvasToJpeg(r.canvas, q);
+      freeCanvas(r.canvas);
+      const img = await out.embedJpg(jpg);
+      out.addPage([r.wPt, r.hPt]).drawImage(img, { x: 0, y: 0, width: r.wPt, height: r.hPt });
+      onPage(i);
+      if (i % 2 === 0) await tick();
+    }
+    out.setProducer("Mampat");
+    return out.save({ useObjectStreams: true });
+  }
+
+  // ---------- estimation ----------
+  async function ensureRasterSamples() {
+    if (S.rSamples.full) return;
+    const n = S.n;
+    const idx = n <= 4 ? [...Array(n).keys()].map((i) => i + 1) : [1, Math.round(n / 3), Math.round(2 * n / 3), n].filter((v, i, a) => a.indexOf(v) === i);
+    for (const i of idx.slice(1)) S.rSamples.color.push((await renderPage(i, SAMPLE_DPI, false)).canvas);
+    S.rSamples.full = true;
+  }
+  function rasterSet(gray) { if (!gray) return S.rSamples.color; if (!S.rSamples.gray || S.rSamples.gray.length !== S.rSamples.color.length) S.rSamples.gray = S.rSamples.color.map(grayCopy); return S.rSamples.gray; }
+  async function estRaster(dpi, q) {
+    const key = "r" + (S.gray ? "g" : "c") + dpi + "|" + q;
+    if (S.estCache.has(key)) return S.estCache.get(key);
+    const sd = Math.min(dpi, SAMPLE_DPI); let sum = 0;
+    const set = rasterSet(S.gray);
+    for (const s of set) sum += (await canvasToJpeg(downscale(s, sd / SAMPLE_DPI), q)).length;
+    let per = sum / set.length;
+    if (dpi > SAMPLE_DPI) per *= Math.pow(dpi / SAMPLE_DPI, 1.6);
+    const est = (per + PAGE_OVERHEAD) * S.n + DOC_OVERHEAD;
+    S.estCache.set(key, est); return est;
+  }
+  async function ensureSmartSamples() {
+    if (S.smartSamples) return;
+    const imgs = S.anat.images.filter((i) => i.ok).sort((a, b) => b.bytes - a.bytes).slice(0, 4);
+    const out = [];
+    for (const info of imgs) {
+      try {
+        const c = await imageToCanvas(S.lib.context.lookup(info.ref), info, 2600);
+        out.push({ info, canvas: c, scale: c.width / info.w, gray: null });
+      } catch (e) {}
+    }
+    S.smartSamples = out;
+  }
+  async function estSmart(dpi, q) {
+    const key = "s" + (S.gray ? "g" : "c") + dpi + "|" + q;
+    if (S.estCache.has(key)) return S.estCache.get(key);
+    const L = lpx(dpi);
+    let bsum = 0, psum = 0;
+    const exact = new Map();
+    for (const s of S.smartSamples) {
+      const want = Math.min(1, L / Math.max(s.info.w, s.info.h));
+      let src = s.canvas;
+      if (S.gray) { if (!s.gray) s.gray = grayCopy(s.canvas); src = s.gray; }
+      const c = downscale(src, Math.min(1, want / s.scale));
+      const b = (await canvasToJpeg(c, q)).length;
+      const outPx = s.info.w * s.info.h * want * want;
+      const scaled = b * outPx / (c.width * c.height);
+      exact.set(s.info, Math.min(s.info.bytes, scaled));
+      bsum += b; psum += c.width * c.height;
+      if (c !== src) freeCanvas(c);
+    }
+    const bpp = psum ? bsum / psum : 0.4;
+    let total = S.nonImg + 400;
+    for (const info of S.anat.images) {
+      if (!info.ok) continue;
+      if (exact.has(info)) { total += exact.get(info); continue; }
+      const sc = Math.min(1, L / Math.max(info.w, info.h));
+      total += Math.min(info.bytes, info.w * info.h * sc * sc * bpp + 300);
+    }
+    S.estCache.set(key, total);
+    return total;
+  }
+  async function choose(estimate, target, floors, minDpi) {
+    const levels = DPI_LEVELS.filter((d) => d <= S.maxDpi && d >= minDpi), budget = target * 0.94;
+    for (const floor of floors) {
+      const fl = QUALS.filter((q) => q >= floor);
+      for (const dpi of levels) {
+        if (await estimate(dpi, fl[fl.length - 1]) > budget) continue;
+        let lo = 0, hi = fl.length - 1;
+        while (lo < hi) { const mid = (lo + hi) >> 1; if (await estimate(dpi, fl[mid]) <= budget) hi = mid; else lo = mid + 1; }
+        return { dpi, q: fl[hi], fits: true, est: await estimate(dpi, fl[hi]) };
+      }
+    }
+    const dpi = levels[levels.length - 1], q = QUALS[QUALS.length - 1];
+    return { dpi, q, fits: false, est: await estimate(dpi, q) };
+  }
+  const canSmart = () => !!(S.lib && S.anat && S.anat.images.some((i) => i.ok));
+  async function makePlan(target) {
+    if (target >= S.file.size) return { mode: "orig", fits: true, est: S.file.size };
+    if (S.lossless && S.lossless.length <= target) return { mode: "lossless", fits: true, est: S.lossless.length };
+    let smart = null;
+    if (canSmart()) {
+      await ensureSmartSamples();
+      smart = Object.assign({ mode: "smart" }, await choose(estSmart, target, [0.55, 0.4, 0.26, 0.14], 34));
+      if (smart.fits || S.keepText) return smart;
+    } else if (S.keepText && S.lib) {
+      return { mode: S.lossless ? "lossless" : "orig", fits: false, est: S.lossless ? S.lossless.length : S.file.size };
+    }
+    await ensureRasterSamples();
+    const r = Object.assign({ mode: "raster" }, await choose(estRaster, target, [0.55, 0.4, 0.26, 0], 24));
+    r.textFloor = smart ? smart.est : (S.lossless ? S.lossless.length : null);
+    if (!r.fits && r.textFloor && r.textFloor <= r.est) {
+      // jadi gambar pun tidak menolong: berikan hasil terkecil yang teksnya tetap utuh
+      if (smart) return Object.assign(smart, { fits: false, rasterNoHelp: true });
+      return { mode: S.lossless ? "lossless" : "orig", fits: false, est: S.lossless ? S.lossless.length : S.file.size, rasterNoHelp: true };
+    }
+    return r;
+  }
+  function qualityOf(p) {
+    if (p.mode === "orig" || p.mode === "lossless") return { l: 5, t: "Kualitas asli" };
+    if (!p.fits) return { l: 1, t: "Target terlalu kecil" };
+    if (p.dpi >= 150 && p.q >= 0.7) return { l: 5, t: "Tajam" };
+    if (p.dpi >= 110 && p.q >= 0.5) return { l: 4, t: "Bagus" };
+    if (p.dpi >= 72 && p.q >= 0.38) return { l: 3, t: "Cukup" };
+    if (p.dpi >= 50) return { l: 2, t: "Agak buram" };
+    return { l: 1, t: "Buram" };
+  }
+
+  // ---------- preview ----------
+  function pageImageRefs(node) {
+    const out = new Map();
+    let res = null;
+    try { res = node.Resources ? node.Resources() : node.lookup(NM("Resources")); } catch (e) { res = null; }
+    const xo = res && res.lookup ? res.lookup(NM("XObject")) : null;
+    if (xo instanceof PDFDict) for (const [k, v] of xo.entries()) if (v instanceof PDFRef) out.set(k.asString(), v);
+    return out;
+  }
+  const byRef = () => { if (!S._byRef) { S._byRef = new Map(); for (const i of S.anat.images) if (i.ok) S._byRef.set(i.ref, i); } return S._byRef; };
+  async function smartPreviewImage(dpi, q, gray) {
+    const src = pageImageRefs(S.lib.getPage(0).node);
+    const out = await PDFDocument.create();
+    const [pg] = await out.copyPages(S.lib, [0]);
+    out.addPage(pg);
+    const dst = pageImageRefs(out.getPage(0).node);
+    for (const [name, ref] of src) {
+      const info = byRef().get(ref), target = dst.get(name);
+      if (!info || !target) continue;
+      const enc = await encodeImage(info, dpi, q, gray);
+      if (enc) applyEnc(out.context, target, info, enc, gray);
+    }
+    const bytes = await out.save();
+    const doc = await pdfjsLib.getDocument({ data: bytes }).promise;
+    try {
+      const page = await doc.getPage(1);
+      const vp = page.getViewport({ scale: scaleFor(page, SAMPLE_DPI) });
+      const c = document.createElement("canvas"); c.width = Math.round(vp.width); c.height = Math.round(vp.height);
+      const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height);
+      await page.render({ canvasContext: x, viewport: vp }).promise;
+      const blob = await new Promise((r) => c.toBlob(r, "image/jpeg", 0.92));
+      freeCanvas(c);
+      return blob;
+    } finally { doc.destroy(); }
+  }
+  async function rasterPreviewImage(dpi, q) {
+    const c = downscale(rasterSet(S.gray)[0], Math.min(dpi, SAMPLE_DPI) / SAMPLE_DPI);
+    return new Promise((r) => c.toBlob(r, "image/jpeg", q));
+  }
+
+  let predTimer = null, predSeq = 0;
+  function schedulePredict(delay) { if (!S.anat || S.busy) return; clearTimeout(predTimer); predTimer = setTimeout(predict, delay == null ? 200 : delay); }
+  function setPred(p) {
+    const m = $("meter");
+    if (!p) { $("qLabel").textContent = "Menganalisis…"; m.dataset.l = "0"; $("spec").textContent = ""; $("predNote").textContent = ""; $("method").innerHTML = ""; $("method").hidden = true; return; }
+    $("qLabel").textContent = p.label; m.dataset.l = String(p.level);
+    $("spec").innerHTML = p.spec.map((s) => "<span>" + s + "</span>").join("");
+    $("method").hidden = false;
+    $("method").className = "method " + (p.raster ? "raster" : "text");
+    $("method").innerHTML = p.raster ? ico.img + "Halaman jadi gambar · link & bookmark tetap" : ico.ok + "Teks, link & bookmark tetap utuh";
+    $("predNote").innerHTML = p.note || "";
+  }
+  function setAfter(blobOrSrc) {
+    const old = $("imgB").src;
+    $("imgB").src = typeof blobOrSrc === "string" ? blobOrSrc : URL.createObjectURL(blobOrSrc);
+    if (old && old.startsWith("blob:") && old !== S.previewSrc) URL.revokeObjectURL(old);
+  }
+  function sigNote() { return S.anat && S.anat.signed ? '<div class="callout warn">' + ico.sig + '<span>PDF ini bertanda tangan digital. Setelah dikompres (dengan alat apa pun), tanda tangannya tidak lagi sah walaupun tampilannya tetap ada.</span></div>' : ""; }
+
+  async function predict() {
+    if (!S.anat || S.busy) return;
+    const seq = ++predSeq, target = S.target;
+    $("cmpBusy").hidden = true;
+    if (S.anat.encrypted) {
+      setAfter(S.previewSrc); $("lbR").textContent = "Hasil";
+      setPred({ label: "Tidak bisa diproses", level: 0, spec: [], note: '<div class="callout warn">' + ico.lock + '<span>PDF ini dikunci dengan izin (owner password). Buka kuncinya dulu dengan aplikasi yang membuatnya, lalu kompres file yang sudah tidak terkunci.</span></div>' });
+      $("method").hidden = true;
+      return;
+    }
+    let p;
+    try { p = await makePlan(target); } catch (e) { console.error(e); return; }
+    if (seq !== predSeq) return;
+    S.plan = p;
+    const q = qualityOf(p);
+    if (p.mode === "orig" || p.mode === "lossless") {
+      setAfter(S.previewSrc); $("lbR").textContent = "Hasil";
+      const msg = p.mode === "orig"
+        ? (p.fits ? "File ini sudah lebih kecil dari target, jadi tidak perlu dikompres." : "PDF ini tidak punya gambar yang bisa dikecilkan, dan Wajib jaga teks sedang menyala.")
+        : p.fits ? "Target tercapai hanya dengan merapikan struktur file. Kualitas tetap asli."
+        : p.rasterNoHelp ? "PDF ini kebanyakan teks, jadi paling kecil sekitar " + fmt(p.est) + ". Mengubah halaman jadi gambar malah membuatnya lebih besar. Coba naikkan target atau pisahkan halamannya."
+        : "Dengan Wajib jaga teks, paling kecil sekitar " + fmt(p.est) + ". Matikan pengaturan itu untuk mencapai " + fmt(target) + ".";
+      setPred({ label: p.fits ? "Kualitas asli" : "Target tidak tercapai", level: p.fits ? 5 : 1, spec: [p.mode === "orig" ? "tidak diubah" : "struktur dirapikan", "≈ " + fmt(p.est)], note: '<div class="callout' + (p.fits ? "" : " warn") + '">' + ico.info + '<span>' + msg + '</span></div>' + sigNote() });
+      return;
+    }
+    let blob;
+    try { blob = p.mode === "smart" ? await smartPreviewImage(p.dpi, p.q, S.gray) : await rasterPreviewImage(p.dpi, p.q); } catch (e) { console.error(e); blob = null; }
+    if (seq !== predSeq) return;
+    if (blob) setAfter(blob);
+    $("lbR").textContent = "Hasil · " + (p.mode === "smart" ? "gambar " : "") + p.dpi + " dpi";
+    let note = "";
+    if (p.mode === "smart") {
+      if (!p.fits && p.rasterNoHelp) note = '<div class="callout warn">' + ico.warn + '<span>Paling kecil sekitar <b>' + fmt(p.est) + '</b> dengan teks tetap utuh. Mengubah halaman jadi gambar tidak membuatnya lebih kecil lagi. Coba Hitam-putih atau naikkan target.</span></div>';
+      else if (!p.fits) note = '<div class="callout warn">' + ico.warn + '<span>Dengan teks tetap utuh, paling kecil sekitar <b>' + fmt(p.est) + '</b>. Matikan <b>Wajib jaga teks</b> untuk mencapai ' + fmt(target) + ' dengan mengubah halaman jadi gambar.</span></div>';
+      else note = '<p class="note">Hanya gambar di dalam PDF yang dikecilkan. Teks tetap tajam di ukuran berapa pun.</p>';
+    } else {
+      const floor = p.textFloor ? " Tanpa cara ini, paling kecil sekitar " + fmt(p.textFloor) + "." : "";
+      note = '<div class="callout warn">' + ico.info + '<span>Target ini terlalu kecil kalau teks dibiarkan utuh.' + floor + ' Isi halaman akan disimpan sebagai gambar, jadi teks tidak bisa dipilih atau dicari, tapi link, bookmark, dan kolom isian tetap berfungsi.</span></div>';
+      if (!p.fits) note += '<div class="callout warn">' + ico.warn + '<span>Bahkan sebagai gambar, perkiraan terkecilnya ' + fmt(p.est) + ' untuk ' + S.n + ' halaman. Coba nyalakan Hitam-putih atau naikkan target.</span></div>';
+    }
+    setPred({
+      label: q.t, level: q.l, raster: p.mode === "raster",
+      spec: [(p.mode === "smart" ? "gambar " : "") + p.dpi + " dpi", "JPEG " + Math.round(p.q * 100) + "%", S.gray ? "hitam-putih" : "berwarna", "≈ " + fmt(Math.min(p.est, p.fits ? target : p.est))],
+      note: note + sigNote(),
+    });
+  }
+
+  // compare slider + zoom
+  const cmp = $("cmp");
+  $("cmpRange").addEventListener("input", (e) => cmp.style.setProperty("--x", e.target.value + "%"));
+  cmp.addEventListener("pointermove", (e) => { const r = cmp.getBoundingClientRect(); cmp.style.setProperty("--ox", ((e.clientX - r.left) / r.width * 100).toFixed(1) + "%"); cmp.style.setProperty("--oy", ((e.clientY - r.top) / r.height * 100).toFixed(1) + "%"); });
+  let downX = 0;
+  $("cmpRange").addEventListener("pointerdown", (e) => { downX = e.clientX; });
+  $("cmpRange").addEventListener("click", (e) => { if (Math.abs(e.clientX - downX) < 4) { cmp.classList.toggle("zoom"); $("zoomHint").textContent = cmp.classList.contains("zoom") ? "Klik lagi untuk memperkecil" : "Klik gambar untuk memperbesar"; } });
+
+  // ---------- run ----------
+  $("go").addEventListener("click", run);
+  $("cancel").addEventListener("click", () => { S.cancelled = true; $("wWhat").textContent = "Membatalkan…"; });
+  function setWork(frac, what) { const p = Math.round(frac * 100); $("wPct").textContent = p + "%"; $("wBar").style.width = p + "%"; if (what) $("wWhat").textContent = what; }
+  function log(m) { $("log").textContent += m + "\n"; }
+
+  // menyesuaikan pengaturan setelah satu percobaan
+  function nextPick(pick, bytes, target, levels, fixed) {
+    const qi = QUALS.indexOf(pick.q), di = levels.indexOf(pick.dpi);
+    const variable = Math.max(1, bytes - fixed), room = target * 0.96 - fixed;
+    if (room <= 0) return null;
+    const ratio = variable / room;
+    if (pick.q > 0.5 && ratio < 1.25 && qi < QUALS.length - 1) return { dpi: pick.dpi, q: QUALS[Math.min(QUALS.length - 1, qi + (ratio > 1.1 ? 2 : 1))] };
+    if (di < levels.length - 1) { const want = pick.dpi / Math.sqrt(ratio * 1.08); let nd = levels.findIndex((d) => d <= want); if (nd <= di) nd = di + 1; if (nd < 0) nd = levels.length - 1; return { dpi: levels[nd], q: pick.q }; }
+    if (qi < QUALS.length - 1) return { dpi: pick.dpi, q: QUALS[Math.min(QUALS.length - 1, qi + 2)] };
+    return null;
+  }
+  function stepUp(pick, levels) {
+    const qi = QUALS.indexOf(pick.q), di = levels.indexOf(pick.dpi);
+    if (di > 0 && pick.q >= 0.55) return { dpi: levels[di - 1], q: pick.q };
+    if (qi > 0) return { dpi: pick.dpi, q: QUALS[Math.max(0, qi - 2)] };
+    return null;
+  }
+  async function attempts(kind, start, target, consider) {
+    const levels = DPI_LEVELS.filter((d) => d <= S.maxDpi && d >= (kind === "smart" ? 34 : 24));
+    const fixed = kind === "smart" ? S.nonImg : S.n * PAGE_OVERHEAD;
+    let pick = { dpi: start.dpi, q: start.q }, bestFit = false;
+    for (let attempt = 1; attempt <= 5; attempt++) {
+      const label = attempt === 1 ? "" : " · percobaan " + attempt;
+      const base = attempt === 1 ? 0.05 : 0.1;
+      const bytes = kind === "smart"
+        ? await buildSmart(pick.dpi, pick.q, S.gray, (f) => setWork(Math.min(0.97, base + (1 - base) * f), "Mengecilkan gambar · " + Math.round(f * 100) + "%" + label))
+        : await (S.lib ? buildRasterInPlace : buildRasterFresh)(pick.dpi, pick.q, S.gray, (i) => setWork(Math.min(0.97, base + (1 - base) * (i / S.n)), "Halaman " + i + " dari " + S.n + " · " + pick.dpi + " dpi" + label));
+      const ok = bytes.length <= target;
+      log((kind === "smart" ? "Gambar saja" : "Halaman jadi gambar") + " " + pick.dpi + " dpi, JPEG " + Math.round(pick.q * 100) + "% → " + fmt(bytes.length) + (ok ? "  ✓" : "  ✗"));
+      consider(bytes, { mode: kind, dpi: pick.dpi, q: pick.q, rank: (kind === "smart" ? 1e6 : 0) + pick.dpi * 100 + pick.q * 100 });
+      if (ok) {
+        bestFit = true;
+        if (attempt === 1 && bytes.length < target * 0.6) { const up = stepUp(pick, levels); if (up) { pick = up; continue; } }
+        break;
+      }
+      if (bestFit) break;
+      const nx = nextPick(pick, bytes.length, target, levels, fixed);
+      if (!nx) break;
+      pick = nx;
+    }
+    return bestFit;
+  }
+
+  async function run() {
+    const target = S.target;
+    if (!S.file || !target || S.busy || !S.anat || S.anat.encrypted) return;
+    S.busy = true; S.cancelled = false; S.result = null; clearTimeout(predTimer); predSeq++;
+    updateGo(); $("log").textContent = "";
+    show("sWork"); setWork(0, "Menyiapkan…");
+    const t0 = performance.now();
+    let best = null;
+    const consider = (bytes, info) => {
+      const fits = bytes.length <= target;
+      if (!best || (fits && !best.fits) || (fits === best.fits && (fits ? info.rank > best.rank : bytes.length < best.bytes.length))) best = Object.assign({ bytes, fits }, info);
+    };
+    log("Asli " + fmt(S.file.size) + " · " + S.n + " halaman · target " + fmt(target));
+    try {
+      setWork(0.02, "Menghitung pengaturan terbaik…");
+      const plan = await makePlan(target);
+      if (plan.mode === "orig") { best = { bytes: S.bytes, fits: plan.fits, mode: "orig", rank: 1e9 }; log("File tidak diubah."); }
+      else if (plan.mode === "lossless") { best = { bytes: S.lossless, fits: plan.fits, mode: "lossless", rank: 1e8 }; log("Struktur dirapikan: " + fmt(S.lossless.length)); }
+      else {
+        if (S.lossless && S.lossless.length < S.file.size) consider(S.lossless, { mode: "lossless", rank: 1e8 });
+        let done = false;
+        if (plan.mode === "smart" || canSmart()) {
+          const sp = plan.mode === "smart" ? plan : await choose(estSmart, target, [0.55, 0.4, 0.26, 0.14], 34);
+          if (plan.mode === "smart" || sp.fits) done = await attempts("smart", sp, target, consider);
+        }
+        if (!done && !S.keepText && !plan.rasterNoHelp) {
+          await ensureRasterSamples();
+          const rp = plan.mode === "raster" ? plan : await choose(estRaster, target, [0.55, 0.4, 0.26, 0], 24);
+          await attempts("raster", rp, target, consider);
+        }
+        if (!best) best = { bytes: S.lossless || S.bytes, fits: false, mode: S.lossless ? "lossless" : "orig", rank: 0 };
+      }
+      setWork(1, "Selesai");
+      log("Waktu: " + ((performance.now() - t0) / 1000).toFixed(1) + " detik");
+      finish(best, target, false);
+    } catch (e) {
+      if (e && e.message === "cancelled") {
+        log("Dibatalkan.");
+        if (best) finish(best, target, true); else { show("sPrev"); toast("Proses dibatalkan."); schedulePredict(0); }
+      } else { console.error(e); toast("Ada masalah saat memproses file ini. Coba target lain atau file lain.", true); show("sPrev"); schedulePredict(0); }
+    } finally { S.busy = false; updateGo(); }
+  }
+
+  function finish(best, target, partial) {
+    const size = best.bytes.length, orig = S.file.size, A = S.anat;
+    const base = S.file.name.replace(/\.pdf$/i, "");
+    S.result = { bytes: best.bytes, name: best.mode === "orig" ? S.file.name : base + "-compressed-" + sizeTag(size) + ".pdf" };
+    show("sDone");
+    const pill = $("rPill");
+    if (best.fits) { pill.className = "pill good"; pill.innerHTML = ico.ok + (best.mode === "orig" ? "Sudah di bawah target" : "Pas di bawah " + fmt(target)); }
+    else { pill.className = "pill warn"; pill.innerHTML = ico.warn + "Belum mencapai " + fmt(target); }
+    $("rFrom").textContent = fmt(orig);
+    const pct = Math.max(0, Math.round((1 - size / orig) * 100));
+    $("rSaved").textContent = pct > 0 ? "−" + pct + "%" : "0%"; $("rSaved").hidden = pct <= 0;
+    countTo($("rBig"), orig, size);
+    const max = Math.max(orig, target, size);
+    $("gO").style.width = "0"; $("gN").style.width = "0";
+    requestAnimationFrame(() => requestAnimationFrame(() => { $("gO").style.width = (orig / max * 100) + "%"; $("gN").style.width = Math.max(0.8, size / max * 100) + "%"; }));
+    $("gT").style.left = Math.min(100, target / max * 100) + "%";
+    $("gOv").textContent = fmt(orig); $("gNv").textContent = fmt(size);
+    const kept = [];
+    if (A && A.links) kept.push(A.links + " link");
+    if (A && A.outline) kept.push("bookmark");
+    if (A && A.form) kept.push("kolom isian");
+    const keptTxt = kept.length ? kept.join(", ") : "";
+    let note = "";
+    if (best.mode === "orig") note = '<p class="note">' + (best.fits ? "File aslinya sudah lebih kecil dari target, jadi tidak diubah." : "Tidak ada yang bisa dikecilkan tanpa mengubah halaman jadi gambar.") + '</p>';
+    else if (best.mode === "lossless") note = '<p class="note">Kualitas tetap asli. <b>Teks bisa dipilih dan dicari</b>' + (keptTxt ? ", " + keptTxt + " tetap berfungsi" : "") + '.</p>';
+    else if (best.mode === "smart") note = '<p class="note">Gambar dikecilkan ke ' + best.dpi + ' dpi, JPEG ' + Math.round(best.q * 100) + '%' + (S.gray ? ', hitam-putih' : '') + '. <b>Teks tetap tajam dan bisa dicari</b>' + (keptTxt ? "; " + keptTxt + " tetap berfungsi" : "") + '.</p>';
+    else note = '<p class="note">Halaman disimpan sebagai gambar ' + best.dpi + ' dpi, JPEG ' + Math.round(best.q * 100) + '%' + (S.gray ? ', hitam-putih' : '') + '. Teks tidak bisa dipilih' + (S.lib && keptTxt ? ", tapi " + keptTxt + " tetap berfungsi" : "") + '.</p>';
+    if (!best.fits && best.mode !== "orig") note += '<div class="callout warn">' + ico.warn + '<span>Ini hasil terkecil yang bisa dibuat' + (S.keepText ? ' dengan teks tetap utuh. Matikan "Wajib jaga teks" untuk mengecilkan lebih jauh.' : '. Nyalakan Hitam-putih, hapus halaman yang tidak perlu, atau naikkan target.') + '</span></div>';
+    if (partial) note = '<div class="callout warn">' + ico.warn + '<span>Dibatalkan. Ini hasil terbaik sebelum proses dihentikan.</span></div>' + note;
+    if (best.mode !== "orig") note += sigNote();
+    $("rNote").innerHTML = note;
+    track("selesai", { mode: best.mode, tercapai: best.fits, target: bucket(target), asli: bucket(orig), halaman: S.n });
+  }
+  // contoh: 225KB, 1.48MB, 12.5MB, 150MB
+  function sizeTag(b) {
+    if (b < MB) return Math.max(1, Math.round(b / KB)) + "KB";
+    const m = b / MB;
+    let t = m < 10 ? m.toFixed(2) : m < 100 ? m.toFixed(1) : String(Math.round(m));
+    if (t.includes(".")) t = t.replace(/0+$/, "").replace(/\.$/, "");
+    return t + "MB";
+  }
+  function countTo(el, from, to) {
+    const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) { el.textContent = fmt(to); return; }
+    const t0 = performance.now(), d = 800;
+    (function f(now) { const k = Math.min(1, (now - t0) / d), e = 1 - Math.pow(1 - k, 3); el.textContent = fmt(Math.round(from + (to - from) * e)); if (k < 1) requestAnimationFrame(f); })(t0);
+  }
+
+  $("retarget").addEventListener("click", () => { show("sPrev"); schedulePredict(0); $("tNum").focus(); $("tNum").select(); });
+  $("another").addEventListener("click", () => $("file").click());
+  $("save").addEventListener("click", async () => {
+    if (!S.result) return;
+    const blob = new Blob([S.result.bytes], { type: "application/pdf" });
+    if (await M.saveFile(blob, S.result.name)) track("unduh", { ukuran: bucket(S.result.bytes.length) });
+  });
+
+  // aplikasi terpasang: PDF yang dibuka lewat "Buka dengan Mampat" (file_handlers di manifest)
+  if ("launchQueue" in window) {
+    window.launchQueue.setConsumer(async (p) => { const h = p.files && p.files[0]; if (h) { try { loadFile(await h.getFile()); } catch (e) {} } });
+  }
+
+  // aplikasi Mac: PDF yang dibuka dari Finder / ditarik ke ikon Dock
+  if (window.mampatBridge && window.mampatBridge.onOpen) {
+    window.mampatBridge.onOpen((name, data) => loadFile(new File([data], name, { type: "application/pdf" })));
+  }
+
+  // init
+  renderTicks(); renderChips(); updateAdvCur(); syncTarget();
+  window.__mampat = S; // untuk pengujian
+})();
+</script>
+</body>
+</html>
