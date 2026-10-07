@@ -50,7 +50,9 @@
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..900&family=Instrument+Sans:wght@400..700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400..700&family=JetBrains+Mono:wght@400..600&display=optional">
 <style>
 /* Layout: hydraulic-press workbench — hero question on top, one tool slab (controls | live preview), then how-it-works and FAQ */
 :root {
@@ -390,6 +392,10 @@ details.log summary { padding-block: 8px; }
   .res-num { gap: 8px 12px; }
 }
 
+/* render bagian bawah halaman hanya saat mendekati layar */
+#cara, #beda, #faq, footer { content-visibility: auto; contain-intrinsic-size: auto 900px; }
+footer { contain-intrinsic-size: auto 80px; }
+
 /* comparison */
 .vs { display: grid; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; background: var(--surface); }
 .vs-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
@@ -650,16 +656,56 @@ details.log summary { padding-block: 8px; }
 <div id="dragov" class="dragov" hidden><div>Lepaskan PDF-nya</div></div>
 <div id="toasts" class="toasts" aria-live="assertive"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 <script>
 (function () {
   "use strict";
   const $ = (id) => document.getElementById(id);
   const KB = 1024, MB = 1048576;
-  if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-  const { PDFDocument, PDFName, PDFDict, PDFArray, PDFRef, PDFStream, PDFRawStream, PDFNumber, decodePDFRawStream } = window.PDFLib || {};
-  const NM = (() => { const c = {}; return (s) => c[s] || (c[s] = PDFName.of(s)); })();
+  // ---------- library PDF dimuat di belakang layar, setelah halaman tampil ----------
+  const LIB = {
+    pdfjs: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js",
+    worker: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js",
+    pdflib: "https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js",
+  };
+  let PDFDocument, PDFName, PDFDict, PDFArray, PDFRef, PDFStream, PDFRawStream, PDFNumber, decodePDFRawStream;
+  const nmCache = {};
+  const NM = (s) => nmCache[s] || (nmCache[s] = PDFName.of(s));
+  function loadScript(src) {
+    return new Promise((res, rej) => {
+      const el = document.createElement("script");
+      el.src = src; el.async = true; el.crossOrigin = "anonymous";
+      el.onload = res; el.onerror = () => rej(new Error("Gagal memuat " + src));
+      document.head.appendChild(el);
+    });
+  }
+  let libsPromise = null;
+  function ensureLibs() {
+    if (!libsPromise) {
+      libsPromise = Promise.all([
+        window.pdfjsLib ? null : loadScript(LIB.pdfjs),
+        window.PDFLib ? null : loadScript(LIB.pdflib),
+      ]).then(() => {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = LIB.worker;
+        ({ PDFDocument, PDFName, PDFDict, PDFArray, PDFRef, PDFStream, PDFRawStream, PDFNumber, decodePDFRawStream } = window.PDFLib);
+      }).catch((e) => { libsPromise = null; throw e; });
+    }
+    return libsPromise;
+  }
+  function whenIdle(fn) {
+    const go = () => (window.requestIdleCallback ? requestIdleCallback(fn, { timeout: 2500 }) : setTimeout(fn, 300));
+    if (document.readyState === "complete") go(); else window.addEventListener("load", go, { once: true });
+  }
+  // Unduh library di awal tanpa langsung diproses (preload), supaya tampilan pertama tidak tersendat.
+  // Library baru diproses saat pengguna mulai berinteraksi; unduhannya sudah ada di cache.
+  function preload(href) {
+    const l = document.createElement("link"); l.rel = "preload"; l.as = "script"; l.href = href; l.crossOrigin = "anonymous"; document.head.appendChild(l);
+  }
+  whenIdle(() => { preload(LIB.pdfjs); preload(LIB.pdflib); });
+  const warm = () => ensureLibs().then(() => whenIdle(() => {
+    const l = document.createElement("link"); l.rel = "prefetch"; l.href = LIB.worker; l.crossOrigin = "anonymous"; document.head.appendChild(l);
+  })).catch(() => {});
+  ["pointerdown", "keydown", "dragenter", "touchstart"].forEach((ev) => window.addEventListener(ev, warm, { once: true, passive: true }));
+  ["pointerenter", "focus"].forEach((ev) => document.getElementById("drop").addEventListener(ev, warm, { once: true, passive: true }));
 
   // ---------- analytics (aktif hanya di versi hosting yang diisi ID-nya) ----------
   const CFG = window.MAMPAT_CONFIG || {};
@@ -825,7 +871,7 @@ details.log summary { padding-block: 8px; }
     const seq = ++loadSeq;
     if (S.pdf) { try { S.pdf.destroy(); } catch (e) {} }
     Object.assign(S, { file: f, bytes: null, pdf: null, n: 0, lib: null, anat: null, lossless: null, nonImg: 0, rSamples: null, smartSamples: null, result: null, plan: null });
-    S.estCache.clear(); S.encCache.clear();
+    S.estCache.clear(); S.encCache.clear(); S._byRef = null;
     $("fName").textContent = f.name; $("fMeta").textContent = fmt(f.size) + " · membaca…";
     drop.hidden = true; $("fcard").hidden = false; $("anat").hidden = true; $("step1").classList.add("done");
     const tctx = $("thumb").getContext("2d"); tctx.clearRect(0, 0, 56, 72);
@@ -835,6 +881,12 @@ details.log summary { padding-block: 8px; }
     show("sPrev"); $("cmpBusy").hidden = false; $("imgA").removeAttribute("src"); $("imgB").removeAttribute("src"); setPred(null);
     try {
       S.bytes = new Uint8Array(await f.arrayBuffer());
+      if (!window.PDFLib || !window.pdfjsLib || !PDFDocument) {
+        $("cmpBusy").textContent = "Menyiapkan mesin PDF…";
+        try { await ensureLibs(); } catch (e) { if (seq === loadSeq) { toast("Mesin PDF gagal dimuat. Periksa koneksi internet, lalu coba lagi.", true); resetFile(); } return; }
+        $("cmpBusy").textContent = "Menganalisis halaman…";
+      }
+      if (seq !== loadSeq) return;
       const pdf = await pdfjsLib.getDocument({ data: S.bytes.slice() }).promise;
       if (seq !== loadSeq) { pdf.destroy(); return; }
       S.pdf = pdf; S.n = pdf.numPages;
@@ -1078,6 +1130,14 @@ details.log summary { padding-block: 8px; }
     }
     return out;
   }
+  // buka kompresi Flate memakai fitur bawaan browser (jauh lebih cepat), cadangan: pdf-lib
+  async function inflateNative(bytes) {
+    if (typeof DecompressionStream === "undefined") return null;
+    try {
+      const out = new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate")));
+      return new Uint8Array(await out.arrayBuffer());
+    } catch (e) { return null; }
+  }
   async function decodeJpeg(bytes) {
     const blob = new Blob([bytes], { type: "image/jpeg" });
     try { return await createImageBitmap(blob, { imageOrientation: "none" }); } catch (e) {}
@@ -1096,7 +1156,8 @@ details.log summary { padding-block: 8px; }
     let src;
     if (info.kind === "jpeg") src = await decodeJpeg(jpegBytes(stream, info));
     else {
-      let raw = decodePDFRawStream(stream).decode();
+      let raw = (!info.pre || !info.pre.length) ? await inflateNative(stream.contents) : null;
+      if (!raw || raw.length < info.w * info.h * info.comps) raw = decodePDFRawStream(stream).decode();
       if (info.predictor >= 10) raw = pngUnpredict(raw, info.comps, info.w);
       const W = info.w, H = info.h, n = info.comps;
       if (raw.length < W * H * n) throw new Error("data gambar tidak lengkap");
@@ -1117,19 +1178,31 @@ details.log summary { padding-block: 8px; }
     return out;
   }
   const lpx = (dpi) => Math.round(dpi * S.anat.pagePts / 72);
-  async function recompress(ctx, info, dpi, q, gray, useCache) {
-    const stream = ctx.lookup(info.ref);
-    if (!(stream instanceof PDFRawStream)) return;
+  // hasil olahan tiap gambar disimpan, dipakai ulang oleh pratinjau dan proses akhir
+  const encPending = new Map();
+  async function encodeImage(info, dpi, q, gray) {
     const key = info.ref.tag + "|" + dpi + "|" + q + "|" + (gray ? 1 : 0);
-    let enc = useCache ? S.encCache.get(key) : null;
-    if (!enc) {
+    if (S.encCache.has(key)) return S.encCache.get(key);
+    if (encPending.has(key)) return encPending.get(key);
+    const job = (async () => {
       let c;
-      try { c = await imageToCanvas(stream, info, lpx(dpi)); } catch (e) { return; }
+      try { c = await imageToCanvas(S.lib.context.lookup(info.ref), info, lpx(dpi)); } catch (e) { return null; }
       if (gray) { const g = grayCopy(c); freeCanvas(c); c = g; }
-      enc = { bytes: await canvasToJpeg(c, q), w: c.width, h: c.height };
+      const enc = { bytes: await canvasToJpeg(c, q), w: c.width, h: c.height };
       freeCanvas(c);
-      if (useCache) S.encCache.set(key, enc);
-    }
+      S.encCache.set(key, enc);
+      return enc;
+    })();
+    encPending.set(key, job);
+    try { return await job; } finally { encPending.delete(key); }
+  }
+  async function recompress(ctx, info, dpi, q, gray) {
+    const enc = await encodeImage(info, dpi, q, gray);
+    if (enc) applyEnc(ctx, info.ref, info, enc, gray);
+  }
+  function applyEnc(ctx, ref, info, enc, gray) {
+    const stream = ctx.lookup(ref);
+    if (!(stream instanceof PDFRawStream)) return;
     if (enc.bytes.length >= stream.contents.length * 0.97) return;
     const d = stream.dict.clone(ctx);
     d.set(NM("Filter"), NM("DCTDecode"));
@@ -1139,7 +1212,7 @@ details.log summary { padding-block: 8px; }
     d.set(NM("BitsPerComponent"), PDFNumber.of(8));
     d.set(NM("ColorSpace"), info.comps === 3 && !gray ? info.csObj : NM("DeviceRGB"));
     d.set(NM("Length"), PDFNumber.of(enc.bytes.length));
-    ctx.assign(info.ref, PDFRawStream.of(d, enc.bytes));
+    ctx.assign(ref, PDFRawStream.of(d, enc.bytes));
   }
 
   // ---------- housekeeping ----------
@@ -1182,7 +1255,7 @@ details.log summary { padding-block: 8px; }
     const ctx = doc.context, imgs = S.anat.images.filter((i) => i.ok);
     for (let k = 0; k < imgs.length; k++) {
       if (S.cancelled) throw new Error("cancelled");
-      await recompress(ctx, imgs[k], dpi, q, gray, true);
+      await recompress(ctx, imgs[k], dpi, q, gray);
       onProg((k + 1) / imgs.length);
       await tick();
     }
@@ -1250,7 +1323,7 @@ details.log summary { padding-block: 8px; }
   }
   async function ensureSmartSamples() {
     if (S.smartSamples) return;
-    const imgs = S.anat.images.filter((i) => i.ok).sort((a, b) => b.bytes - a.bytes).slice(0, 6);
+    const imgs = S.anat.images.filter((i) => i.ok).sort((a, b) => b.bytes - a.bytes).slice(0, 4);
     const out = [];
     for (const info of imgs) {
       try {
@@ -1336,15 +1409,26 @@ details.log summary { padding-block: 8px; }
   }
 
   // ---------- preview ----------
+  function pageImageRefs(node) {
+    const out = new Map();
+    let res = null;
+    try { res = node.Resources ? node.Resources() : node.lookup(NM("Resources")); } catch (e) { res = null; }
+    const xo = res && res.lookup ? res.lookup(NM("XObject")) : null;
+    if (xo instanceof PDFDict) for (const [k, v] of xo.entries()) if (v instanceof PDFRef) out.set(k.asString(), v);
+    return out;
+  }
+  const byRef = () => { if (!S._byRef) { S._byRef = new Map(); for (const i of S.anat.images) if (i.ok) S._byRef.set(i.ref, i); } return S._byRef; };
   async function smartPreviewImage(dpi, q, gray) {
+    const src = pageImageRefs(S.lib.getPage(0).node);
     const out = await PDFDocument.create();
     const [pg] = await out.copyPages(S.lib, [0]);
     out.addPage(pg);
-    for (const [ref, obj] of out.context.enumerateIndirectObjects()) {
-      if (obj instanceof PDFRawStream && obj.dict.get(NM("Subtype")) === NM("Image")) {
-        const info = imageInfo(ref, obj);
-        if (info.ok) await recompress(out.context, info, dpi, q, gray, false);
-      }
+    const dst = pageImageRefs(out.getPage(0).node);
+    for (const [name, ref] of src) {
+      const info = byRef().get(ref), target = dst.get(name);
+      if (!info || !target) continue;
+      const enc = await encodeImage(info, dpi, q, gray);
+      if (enc) applyEnc(out.context, target, info, enc, gray);
     }
     const bytes = await out.save();
     const doc = await pdfjsLib.getDocument({ data: bytes }).promise;
