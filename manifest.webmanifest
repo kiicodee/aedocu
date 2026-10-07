@@ -1,0 +1,39 @@
+{
+  "name": "Mampat · Kompres PDF sesuai ukuran",
+  "short_name": "Mampat",
+  "description": "Kompres PDF ke ukuran yang kamu tentukan sendiri. Teks tetap utuh, tanpa upload.",
+  "lang": "id",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#eceef1",
+  "theme_color": "#ffd02b",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "file_handlers": [
+    {
+      "action": "./",
+      "accept": {
+        "application/pdf": [
+          ".pdf"
+        ]
+      }
+    }
+  ]
+}
