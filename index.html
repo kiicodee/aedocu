@@ -17,7 +17,8 @@
 <meta name="apple-mobile-web-app-title" content="Mampat">
 <script>
   // link lama ke bagian alat kompres (#tool, #cara, #beda, #faq) sekarang ada di /kompres/
-  if (/^#(tool|cara|beda|faq)$/.test(location.hash)) location.replace("kompres/" + location.hash);
+  function toKompres() { if (/^#(tool|cara|beda|faq)$/.test(location.hash)) location.replace("kompres/" + location.hash); }
+  toKompres(); window.addEventListener("hashchange", toKompres);
 </script>
 <script src="assets/mampat.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
