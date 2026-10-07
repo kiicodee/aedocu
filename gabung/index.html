@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gabung PDF tanpa upload · Mampat</title>
+<meta name="description" content="Gabungkan beberapa PDF jadi satu file, atur urutannya dengan ditarik. Diproses di perangkatmu: tanpa upload, tanpa batas, tanpa iklan.">
+<meta name="theme-color" content="#ffd02b">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Gabung PDF tanpa upload · Mampat">
+<meta property="og:description" content="Gabungkan beberapa PDF jadi satu file, atur urutannya dengan ditarik. Diproses di perangkatmu: tanpa upload, tanpa batas, tanpa iklan.">
+<meta property="og:image" content="../icon-512.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" type="image/png" href="../favicon-32.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mampat">
+<script src="../assets/mampat.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400..700&family=JetBrains+Mono:wght@400..600&display=optional">
+<link rel="stylesheet" href="../assets/mampat.css">
+</head>
+<body>
+<div class="app">
+  <mampat-top data-tool="gabung"></mampat-top>
+
+  <header class="hero sm">
+    <span class="eyebrow">Gabung PDF · tanpa upload</span>
+    <h1>Satukan PDF jadi <mark>satu file.</mark></h1>
+    <p class="lede">Pilih beberapa PDF, tarik untuk mengatur urutannya, lalu gabungkan. Isi dan kualitas setiap halaman tetap seperti aslinya, dan <b>file kamu tidak pernah meninggalkan perangkat ini</b>.</p>
+  </header>
+
+  <section class="panel" id="tool" aria-label="Alat gabung PDF">
+    <div id="vPick">
+      <div id="drop" class="drop big" tabindex="0" role="button" aria-label="Pilih file PDF">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0-4.5 4.5M12 4l4.5 4.5"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg></div>
+        <strong>Tarik beberapa PDF ke sini</strong>
+        <span>atau klik untuk memilih · bisa pilih banyak sekaligus</span>
+      </div>
+    </div>
+
+    <div id="vEdit" class="panel-in" hidden>
+      <div class="bar">
+        <h2><span class="num">1</span>Atur urutan</h2>
+        <div class="btns">
+          <button id="sortName" class="ghost" type="button">Urutkan nama A–Z</button>
+          <button id="clear" class="ghost" type="button">Mulai dari awal</button>
+        </div>
+      </div>
+      <p class="note" id="hint">Tarik kartu (atau pakai tombol ← →) untuk mengatur urutan. File paling kiri jadi halaman paling depan.</p>
+      <div id="list" class="pages"></div>
+      <div class="cta-wrap">
+        <button id="go" class="cta" type="button" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h2M16 3h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-2M12 8v8M8 12h8"/></svg>
+          <span id="goText">Pilih minimal 2 PDF</span>
+        </button>
+      </div>
+    </div>
+
+    <div id="vWork" hidden></div>
+    <div id="vDone" hidden></div>
+    <input id="file" type="file" accept="application/pdf,.pdf" multiple hidden>
+  </section>
+
+  <section class="sec small">
+    <div class="sec-h"><span class="eyebrow">Cara pakai</span><h2>Tiga langkah, tanpa daftar akun</h2></div>
+    <ol class="steps3">
+      <li><b>Pilih PDF</b>Pilih atau tarik dua file PDF atau lebih. Bisa ditambah lagi kapan saja.</li>
+      <li><b>Atur urutan</b>Tarik kartunya ke posisi yang kamu mau, atau urutkan berdasarkan nama.</li>
+      <li><b>Gabungkan &amp; simpan</b>Hasilnya satu PDF bernama <span class="mono">nama-file-gabung.pdf</span>.</li>
+    </ol>
+  </section>
+
+  <section class="sec small" id="faq">
+    <div class="sec-h"><span class="eyebrow">FAQ</span><h2>Yang sering ditanyakan</h2></div>
+    <div class="faq">
+      <details><summary>Apakah ada batas jumlah atau ukuran file?</summary><p>Tidak ada. Batasnya hanya memori perangkatmu. Puluhan file dengan ratusan halaman biasanya lancar di laptop.</p></details>
+      <details><summary>Apakah kualitasnya turun?</summary><p>Tidak. Halaman disalin apa adanya, tidak dikompres ulang. Kalau hasilnya terlalu besar, kecilkan dengan alat Kompres PDF.</p></details>
+      <details><summary>Apakah bookmark dan kolom isian ikut?</summary><p>Isi halaman dan link di dalam halaman ikut. Bookmark (daftar isi di samping) dan kolom isian dari file asli belum ikut digabung.</p></details>
+      <details><summary>Bisa untuk PDF yang dikunci kata sandi?</summary><p>Belum. Buka dulu kuncinya dengan aplikasi yang membuatnya. Mampat akan memberi tahu file mana yang terkunci.</p></details>
+    </div>
+  </section>
+
+  <mampat-foot data-tool="gabung"></mampat-foot>
+</div>
+
+<script src="../assets/pdf-alat.js"></script>
+<script>
+(function () {
+  "use strict";
+  const M = window.Mampat, A = window.Alat, $ = A.$;
+  const TOOL = "gabung";
+  const V = A.views(["vPick", "vEdit", "vWork", "vDone"]);
+  let items = [];        // { id, file, doc (pdf-lib), view (pdf.js), n, el }
+  let seq = 0, busy = false, result = null;
+  M.warmLibs(["pdfjs", "pdflib"], $("drop"));
+
+  A.pickFiles({ drop: $("drop"), input: $("file"), accept: A.isPdf, kind: "PDF", onFiles: addFiles, enabled: () => !busy });
+  const list = $("list");
+  const handleSel = matchMedia("(pointer: fine)").matches ? ".pv, .handle" : ".handle";
+  A.sortable(list, { items: ".pg", handle: handleSel, onChange: syncOrder });
+
+  function card(it) {
+    const el = document.createElement("div");
+    el.className = "pg"; el.dataset.id = it.id;
+    el.innerHTML = '<div class="pv"><span class="no"></span><canvas width="1" height="1"></canvas></div>' +
+      '<div class="nm"></div><div class="mt">membaca…</div>' +
+      '<div class="row"><button class="ib" type="button" data-act="left" aria-label="Geser ke kiri">' + A.ICON.left + '</button>' +
+      '<button class="ib" type="button" data-act="right" aria-label="Geser ke kanan">' + A.ICON.right + '</button>' +
+      '<span class="ib handle" role="img" aria-label="Tarik untuk memindah">' + A.ICON.grip + '</span>' +
+      '<button class="ib bad" type="button" data-act="del" aria-label="Hapus dari daftar">' + A.ICON.trash + "</button></div>";
+    el.querySelector(".nm").textContent = it.file.name; el.querySelector(".nm").title = it.file.name;
+    return el;
+  }
+  function addTile() {
+    const t = document.createElement("button"); t.type = "button"; t.className = "add-tile"; t.id = "addTile";
+    t.innerHTML = A.ICON.plus + "<span>Tambah PDF</span>";
+    t.addEventListener("click", () => $("file").click());
+    return t;
+  }
+
+  async function addFiles(files) {
+    if (busy) return;
+    V.show("vEdit");
+    if (!$("addTile")) list.appendChild(addTile());
+    const fresh = files.map((file) => ({ id: ++seq, file, doc: null, view: null, n: 0, el: null }));
+    for (const it of fresh) { it.el = card(it); list.insertBefore(it.el, $("addTile")); items.push(it); }
+    renumber(); update();
+    let ok = 0;
+    for (const it of fresh) {
+      try {
+        const r = await A.openPdf(it.file, true);
+        if (!items.includes(it)) { r.view.destroy(); continue; }
+        it.doc = r.edit; it.view = r.view; it.n = r.n; ok++;
+        it.el.querySelector(".mt").textContent = it.n + " hal · " + M.fmt(it.file.size);
+        A.thumb(it.view, 1, it.el.querySelector("canvas"), { box: 220 });
+      } catch (e) {
+        M.toast(it.file.name + ": " + (e.userMsg || "tidak bisa dibaca."), true);
+        remove(it);
+      }
+      update();
+    }
+    if (ok) M.track(TOOL, "pilih", { file: items.length });
+  }
+  function remove(it) {
+    items = items.filter((x) => x !== it);
+    if (it.view) { try { it.view.destroy(); } catch (e) {} }
+    it.el.remove(); renumber(); update();
+    if (!items.length) reset();
+  }
+  function renumber() { [...list.querySelectorAll(".pg")].forEach((el, i, all) => { el.querySelector(".no").textContent = i + 1; el.querySelector('[data-act="left"]').disabled = i === 0; el.querySelector('[data-act="right"]').disabled = i === all.length - 1; }); }
+  function syncOrder() { const order = [...list.querySelectorAll(".pg")].map((el) => +el.dataset.id); items.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id)); renumber(); }
+  function update() {
+    const ready = items.filter((it) => it.doc), pages = ready.reduce((s, it) => s + it.n, 0);
+    const loading = items.some((it) => !it.doc);
+    $("go").disabled = busy || loading || ready.length < 2;
+    $("goText").textContent = loading ? "Membaca PDF…" : ready.length < 2 ? "Tambah minimal 1 PDF lagi" : "Gabungkan " + ready.length + " PDF (" + pages + " halaman)";
+  }
+  function reset() {
+    items.forEach((it) => { if (it.view) { try { it.view.destroy(); } catch (e) {} } });
+    items = []; result = null; list.textContent = ""; V.show("vPick");
+  }
+
+  list.addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-act]"); if (!b) return;
+    const el = b.closest(".pg"), it = items.find((x) => x.id === +el.dataset.id);
+    if (b.dataset.act === "del") { remove(it); return; }
+    if (A.moveBy(el, b.dataset.act === "left" ? -1 : 1, ".pg")) { syncOrder(); b.focus(); }
+  });
+  $("sortName").addEventListener("click", () => {
+    const coll = new Intl.Collator("id", { numeric: true, sensitivity: "base" });
+    items.sort((a, b) => coll.compare(a.file.name, b.file.name));
+    items.forEach((it) => list.insertBefore(it.el, $("addTile"))); renumber();
+  });
+  $("clear").addEventListener("click", reset);
+
+  $("go").addEventListener("click", async () => {
+    if ($("go").disabled) return;
+    busy = true; V.cancelled = false; V.show("vWork"); V.work(0, "Menyiapkan…");
+    try {
+      const { PDFDocument } = PDFLib;
+      const out = await PDFDocument.create({ updateMetadata: false });
+      const total = items.reduce((s, it) => s + it.n, 0);
+      let done = 0;
+      for (const it of items) {
+        if (V.cancelled) throw new Error("cancelled");
+        V.work(done / total * 0.9, "Menyalin " + it.file.name);
+        const pages = await out.copyPages(it.doc, it.doc.getPageIndices());
+        pages.forEach((p) => out.addPage(p));
+        done += it.n;
+        await M.tick();
+      }
+      V.work(0.93, "Menyimpan PDF…");
+      out.setProducer("Mampat"); out.setCreator("Mampat · Gabung PDF");
+      const bytes = await out.save({ useObjectStreams: true });
+      if (V.cancelled) throw new Error("cancelled");
+      result = { bytes, name: M.baseName(items[0].file.name) + "-gabung.pdf" };
+      V.done({ pill: items.length + " PDF digabung", big: M.fmt(bytes.length), from: total + " halaman", note: "Nama file: <b>" + M.esc(result.name) + "</b>", saveText: "Simpan PDF" });
+      M.track(TOOL, "selesai", { file: items.length, halaman: total });
+    } catch (e) {
+      if (e && e.message === "cancelled") { M.toast("Proses dibatalkan."); V.show("vEdit"); }
+      else { console.error(e); M.toast("Ada masalah saat menggabungkan. Coba hapus file yang bermasalah lalu ulangi.", true); V.show("vEdit"); }
+    } finally { busy = false; update(); }
+  });
+  $("dSave").addEventListener("click", async () => {
+    if (result && await M.saveFile(new Blob([result.bytes], { type: "application/pdf" }), result.name)) M.track(TOOL, "unduh", { ukuran: M.bucket(result.bytes.length) });
+  });
+  $("dBack").addEventListener("click", () => V.show("vEdit"));
+  $("dNew").addEventListener("click", () => { reset(); $("file").click(); });
+})();
+</script>
+</body>
+</html>

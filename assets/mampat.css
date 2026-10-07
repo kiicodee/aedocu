@@ -385,3 +385,5 @@ mampat-foot footer { margin-top: 32px; }
   .card h3 { margin: 0; font-size: 16.5px; }
   .card p { font-size: 13.5px; }
 }
+.panel-in { display: grid; gap: 18px; }
+.pg .row .handle { position: absolute; top: 14px; right: 14px; z-index: 1; background: color-mix(in srgb, var(--surface) 92%, transparent); }
