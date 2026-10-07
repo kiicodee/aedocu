@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pisah PDF tanpa upload · Mampat</title>
+<meta name="description" content="Ambil halaman tertentu dari PDF (misalnya 1-3, 5) atau pisah setiap halaman jadi PDF sendiri. Diproses di perangkatmu: tanpa upload, tanpa batas, tanpa iklan.">
+<meta name="theme-color" content="#ffd02b">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Pisah PDF tanpa upload · Mampat">
+<meta property="og:description" content="Ambil halaman tertentu dari PDF (misalnya 1-3, 5) atau pisah setiap halaman jadi PDF sendiri. Diproses di perangkatmu: tanpa upload, tanpa batas, tanpa iklan.">
+<meta property="og:image" content="../icon-512.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" type="image/png" href="../favicon-32.png">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mampat">
+<script src="../assets/mampat.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400..700&family=JetBrains+Mono:wght@400..600&display=optional">
+<link rel="stylesheet" href="../assets/mampat.css">
+</head>
+<body>
+<div class="app">
+  <mampat-top data-tool="pisah"></mampat-top>
+
+  <header class="hero sm">
+    <span class="eyebrow">Pisah PDF · tanpa upload</span>
+    <h1>Ambil halaman yang <mark>kamu perlu.</mark></h1>
+    <p class="lede">Ketik halamannya, misalnya <b>1-3, 5</b>, atau klik langsung di thumbnail. Bisa juga memisah setiap halaman jadi PDF sendiri. Kualitas halaman tetap asli, dan <b>file kamu tidak pernah meninggalkan perangkat ini</b>.</p>
+  </header>
+
+  <section class="panel" id="tool" aria-label="Alat pisah PDF">
+    <div id="vPick">
+      <div id="drop" class="drop big" tabindex="0" role="button" aria-label="Pilih file PDF">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0-4.5 4.5M12 4l4.5 4.5"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg></div>
+        <strong>Tarik PDF ke sini</strong>
+        <span>atau klik untuk memilih · bisa juga <kbd>Ctrl</kbd>+<kbd>V</kbd></span>
+      </div>
+    </div>
+
+    <div id="vEdit" class="panel-in" hidden>
+      <div class="fcard">
+        <div class="thumb"><canvas id="thumb" width="56" height="72"></canvas></div>
+        <div style="min-width:0"><div id="fName" class="nm"></div><div id="fMeta" class="mt"></div></div>
+        <button id="fChange" class="ghost" type="button">Ganti</button>
+      </div>
+      <div class="opts">
+        <div class="field">
+          <b>Cara memisah</b>
+          <div class="seg" role="group" aria-label="Cara memisah" id="modeSeg">
+            <button type="button" data-mode="ambil" aria-pressed="true">Ambil halaman</button>
+            <button type="button" data-mode="semua" aria-pressed="false">Pisah per halaman</button>
+          </div>
+          <p id="modeHelp">Halaman yang dipilih disatukan jadi satu PDF, sesuai urutan yang kamu tulis.</p>
+        </div>
+        <div class="field" id="rangeField">
+          <label for="range"><b>Halaman</b></label>
+          <input id="range" class="inp" type="text" inputmode="numeric" autocomplete="off" placeholder="contoh: 1-3, 5" aria-describedby="rangeErr">
+          <p class="err" id="rangeErr" hidden></p>
+          <p id="rangeHelp">Pakai koma untuk memisah, tanda hubung untuk rentang. <span class="mono">8-</span> berarti halaman 8 sampai akhir.</p>
+        </div>
+      </div>
+      <div class="bar">
+        <h2><span class="num">2</span><span id="gridTitle">Klik halaman untuk memilih</span></h2>
+        <div class="btns" id="selBtns">
+          <button class="ghost" type="button" data-sel="all">Pilih semua</button>
+          <button class="ghost" type="button" data-sel="none">Kosongkan</button>
+        </div>
+      </div>
+      <div id="grid" class="pages"></div>
+      <div class="cta-wrap">
+        <button id="go" class="cta" type="button" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"/></svg>
+          <span id="goText">Pilih halaman dulu</span>
+        </button>
+      </div>
+    </div>
+
+    <div id="vWork" hidden></div>
+    <div id="vDone" hidden></div>
+    <input id="file" type="file" accept="application/pdf,.pdf" hidden>
+  </section>
+
+  <section class="sec small">
+    <div class="sec-h"><span class="eyebrow">Cara pakai</span><h2>Ambil sebagian, atau pecah semuanya</h2></div>
+    <ol class="steps3">
+      <li><b>Pilih PDF</b>Semua halamannya langsung tampil sebagai thumbnail.</li>
+      <li><b>Pilih halaman</b>Ketik seperti <span class="mono">1-3, 5</span> atau klik thumbnail. Untuk memecah semua halaman, pilih "Pisah per halaman".</li>
+      <li><b>Simpan</b>Hasilnya <span class="mono">nama-file-hal-1-3_5.pdf</span>, atau satu ZIP berisi PDF per halaman.</li>
+    </ol>
+  </section>
+
+  <section class="sec small" id="faq">
+    <div class="sec-h"><span class="eyebrow">FAQ</span><h2>Yang sering ditanyakan</h2></div>
+    <div class="faq">
+      <details><summary>Urutan halamannya bisa diatur?</summary><p>Bisa. Hasil mengikuti urutan yang kamu tulis, jadi <span class="mono">5, 1-3</span> menaruh halaman 5 di depan. Untuk memutar, menghapus, atau mengatur urutan dengan drag, pakai alat Atur Halaman.</p></details>
+      <details><summary>Kenapa "Pisah per halaman" hasilnya ZIP?</summary><p>Supaya kamu cukup menyimpan satu file, bukan puluhan unduhan terpisah. ZIP bisa dibuka langsung di Windows, Mac, Android, dan aplikasi File di iPhone.</p></details>
+      <details><summary>Apakah kualitasnya turun?</summary><p>Tidak. Halaman disalin apa adanya, tidak dikompres ulang.</p></details>
+      <details><summary>Bisa untuk PDF yang dikunci kata sandi?</summary><p>Belum. Buka dulu kuncinya dengan aplikasi yang membuatnya, lalu pilih file yang sudah tidak terkunci.</p></details>
+    </div>
+  </section>
+
+  <mampat-foot data-tool="pisah"></mampat-foot>
+</div>
+
+<script src="../assets/pdf-alat.js"></script>
+<script src="../assets/zip.js"></script>
+<script>
+(function () {
+  "use strict";
+  const M = window.Mampat, A = window.Alat, $ = A.$;
+  const TOOL = "pisah";
+  const V = A.views(["vPick", "vEdit", "vWork", "vDone"]);
+  let doc = null, mode = "ambil", sel = new Set(), ranges = null, busy = false, result = null, loadSeq = 0;
+  M.warmLibs(["pdfjs", "pdflib"], $("drop"));
+  A.pickFiles({ drop: $("drop"), input: $("file"), accept: A.isPdf, kind: "PDF", onFiles: (f) => load(f[0]), enabled: () => !busy });
+  $("fChange").addEventListener("click", () => $("file").click());
+
+  async function load(file) {
+    const my = ++loadSeq;
+    try {
+      const r = await A.openPdf(file, true);
+      if (my !== loadSeq) { r.view.destroy(); return; }
+      if (doc) { try { doc.view.destroy(); } catch (e) {} }
+      doc = r; sel = new Set(); ranges = null; $("range").value = "";
+      $("fName").textContent = file.name; $("fMeta").textContent = M.fmt(file.size) + " · " + doc.n + " halaman";
+      A.thumb(doc.view, 1, $("thumb"), { box: 72, now: true });
+      buildGrid(); setMode(doc.n > 1 ? mode : "ambil");
+      V.show("vEdit");
+      M.track(TOOL, "pilih", { halaman: doc.n, ukuran: M.bucket(file.size) });
+    } catch (e) { M.toast(e.userMsg || "PDF ini tidak bisa dibaca.", true); }
+  }
+  function buildGrid() {
+    const g = $("grid"); g.textContent = "";
+    const frag = document.createDocumentFragment();
+    for (let i = 1; i <= doc.n; i++) {
+      const el = document.createElement("button");
+      el.type = "button"; el.className = "pg click"; el.dataset.p = i; el.setAttribute("aria-pressed", "false"); el.setAttribute("aria-label", "Halaman " + i);
+      el.innerHTML = '<div class="pv"><span class="no">' + i + '</span><canvas width="1" height="1"></canvas></div>';
+      frag.appendChild(el);
+      A.thumb(doc.view, i, el.querySelector("canvas"), { box: 220 });
+    }
+    g.appendChild(frag);
+  }
+  function setMode(m) {
+    mode = m;
+    [...$("modeSeg").children].forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.mode === m)));
+    $("rangeField").hidden = m !== "ambil"; $("selBtns").hidden = m !== "ambil";
+    $("modeHelp").textContent = m === "ambil" ? "Halaman yang dipilih disatukan jadi satu PDF, sesuai urutan yang kamu tulis." : "Setiap halaman jadi PDF sendiri, lalu dikumpulkan dalam satu file ZIP.";
+    $("gridTitle").textContent = m === "ambil" ? "Klik halaman untuk memilih" : "Semua " + doc.n + " halaman akan dipisah";
+    $("grid").classList.toggle("all", m === "semua");
+    paint();
+  }
+  $("modeSeg").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b && doc) setMode(b.dataset.mode); });
+
+  // pilihan ↔ teks rentang
+  function readRange() {
+    const t = $("range").value.trim();
+    if (!t) { ranges = null; sel = new Set(); $("rangeErr").hidden = true; $("range").classList.remove("bad"); return; }
+    try {
+      ranges = A.parseRanges(t, doc.n);
+      sel = new Set(); ranges.forEach(([a, b]) => { for (let p = a; p <= b; p++) sel.add(p); });
+      $("rangeErr").hidden = true; $("range").classList.remove("bad");
+    } catch (e) { ranges = null; $("rangeErr").textContent = e.message; $("rangeErr").hidden = false; $("range").classList.add("bad"); }
+  }
+  function writeRange() {
+    const pages = [...sel].sort((a, b) => a - b);
+    $("range").value = A.compactRanges(pages);
+    ranges = pages.length ? A.parseRanges($("range").value, doc.n) : null;
+    $("rangeErr").hidden = true; $("range").classList.remove("bad");
+  }
+  $("range").addEventListener("input", () => { readRange(); paint(); });
+  $("range").addEventListener("keydown", (e) => { if (e.key === "Enter" && !$("go").disabled) $("go").click(); });
+  $("grid").addEventListener("click", (e) => {
+    const el = e.target.closest(".pg"); if (!el || mode !== "ambil") return;
+    const p = +el.dataset.p; if (sel.has(p)) sel.delete(p); else sel.add(p);
+    writeRange(); paint();
+  });
+  $("selBtns").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    sel = new Set(); if (b.dataset.sel === "all") for (let i = 1; i <= doc.n; i++) sel.add(i);
+    writeRange(); paint();
+  });
+  function count() { return ranges ? ranges.reduce((s, [a, b]) => s + b - a + 1, 0) : 0; }
+  function paint() {
+    [...$("grid").children].forEach((el) => { const on = mode === "semua" || sel.has(+el.dataset.p); el.classList.toggle("sel", on); el.setAttribute("aria-pressed", String(on)); });
+    const n = count(), bad = !$("rangeErr").hidden;
+    if (mode === "ambil") {
+      $("go").disabled = busy || !n || bad;
+      $("goText").textContent = bad ? "Periksa nomor halaman" : !n ? "Pilih halaman dulu" : "Ambil " + n + " halaman";
+    } else {
+      $("go").disabled = busy || doc.n < 2;
+      $("goText").textContent = doc.n < 2 ? "PDF ini cuma 1 halaman" : "Pisah jadi " + doc.n + " PDF";
+    }
+  }
+
+  async function onePdf(indices) {
+    const out = await PDFLib.PDFDocument.create({ updateMetadata: false });
+    const pages = await out.copyPages(doc.edit, indices);
+    pages.forEach((p) => out.addPage(p));
+    out.setProducer("Mampat"); out.setCreator("Mampat · Pisah PDF");
+    return out.save({ useObjectStreams: true });
+  }
+  $("go").addEventListener("click", async () => {
+    if ($("go").disabled) return;
+    busy = true; V.cancelled = false; V.show("vWork"); V.work(0, "Menyiapkan…");
+    const base = M.baseName(doc.file.name);
+    try {
+      if (mode === "ambil") {
+        const idx = []; ranges.forEach(([a, b]) => { for (let p = a; p <= b; p++) idx.push(p - 1); });
+        V.work(0.3, "Menyalin " + idx.length + " halaman…");
+        const bytes = await onePdf(idx);
+        result = { blob: new Blob([bytes], { type: "application/pdf" }), name: base + "-hal-" + A.rangeLabel(ranges) + ".pdf" };
+        V.done({ pill: idx.length + " halaman diambil", big: M.fmt(bytes.length), from: "dari " + doc.n + " halaman", note: "Nama file: <b>" + M.esc(result.name) + "</b>", saveText: "Simpan PDF" });
+        M.track(TOOL, "selesai", { mode: "ambil", halaman: idx.length });
+      } else {
+        const files = [];
+        for (let i = 0; i < doc.n; i++) {
+          if (V.cancelled) throw new Error("cancelled");
+          V.work(i / doc.n * 0.95, "Halaman " + (i + 1) + " dari " + doc.n);
+          files.push({ name: base + "-hal-" + A.pad(i + 1, doc.n) + ".pdf", data: await onePdf([i]) });
+          await M.tick();
+        }
+        V.work(0.97, "Membuat ZIP…");
+        const blob = MampatZip.zip(files);
+        result = { blob, name: base + "-per-halaman.zip" };
+        V.done({ pill: doc.n + " PDF dibuat", big: M.fmt(blob.size), from: "dalam 1 file ZIP", note: "Nama file: <b>" + M.esc(result.name) + "</b>. Isinya " + M.esc(files[0].name) + " sampai " + M.esc(files[files.length - 1].name) + ".", saveText: "Simpan ZIP" });
+        M.track(TOOL, "selesai", { mode: "semua", halaman: doc.n });
+      }
+    } catch (e) {
+      if (e && e.message === "cancelled") M.toast("Proses dibatalkan.");
+      else { console.error(e); M.toast("Ada masalah saat memisah PDF ini. Coba lagi atau pakai file lain.", true); }
+      V.show("vEdit");
+    } finally { busy = false; paint(); }
+  });
+  $("dSave").addEventListener("click", async () => { if (result && await M.saveFile(result.blob, result.name)) M.track(TOOL, "unduh", { ukuran: M.bucket(result.blob.size) }); });
+  $("dBack").addEventListener("click", () => V.show("vEdit"));
+  $("dNew").addEventListener("click", () => $("file").click());
+})();
+</script>
+</body>
+</html>
