@@ -90,18 +90,14 @@ Buka browser di **`http://localhost:3000/`**.
 
 ---
 
-## ☁️ Deployment
+## ☁️ Deployment ke Vercel
 
-### 1. Deploy ke Vercel (Rekomendasi)
-Proyek ini sudah dilengkapi file [`vercel.json`](vercel.json):
+Proyek ini telah dikonfigurasi khusus dan siap deploy ke Vercel via [`vercel.json`](vercel.json):
 1. Masuk ke [Vercel Dashboard](https://vercel.com).
-2. Pilih **Add New** → **Project**.
-3. Hubungkan ke repositori `kiicodee/aedocu`.
-4. Pilih Framework Preset: **Other** (Static).
-5. Klik **Deploy**.
-
-### 2. GitHub Pages
-Workflow bawaan sudah tersedia di [`.github/workflows/pages.yml`](.github/workflows/pages.yml). Setiap kali kamu melakukan `git push` ke branch `main`, GitHub Pages akan ter-deploy secara otomatis.
+2. Klik **Add New** → **Project**.
+3. Hubungkan repositori GitHub `kiicodee/aedocu`.
+4. Framework Preset: **Other** (Static).
+5. Klik **Deploy** — selesai! Setiap push ke branch `main` akan ter-deploy otomatis.
 
 ---
 
