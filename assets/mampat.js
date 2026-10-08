@@ -248,8 +248,9 @@ window.MAMPAT_CONFIG = {
   }
 
   // ---------- offline & pasang aplikasi ----------
+  // didaftarkan setelah halaman selesai dimuat & browser menganggur, supaya unduhan simpanan offline tidak berebut koneksi
   try {
-    if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol) && c.PWA) navigator.serviceWorker.register(ROOT + "sw.js", { scope: ROOT }).catch(() => {});
+    if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol) && c.PWA) whenIdle(() => navigator.serviceWorker.register(ROOT + "sw.js", { scope: ROOT }).catch(() => {}));
   } catch (e) {}
   let installEvt = null;
   const installBtns = new Set();

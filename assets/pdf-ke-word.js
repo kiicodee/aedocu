@@ -125,7 +125,7 @@
 
   // warna teks: pdf.js tidak memberi warna, jadi diambil dari piksel halaman yang dirender
   async function renderPixels(page) {
-    const s = 3, v2 = page.getViewport({ scale: s });
+    const s = 2, v2 = page.getViewport({ scale: s });
     const c = document.createElement("canvas"); c.width = Math.ceil(v2.width); c.height = Math.ceil(v2.height);
     const x = c.getContext("2d", { willReadFrequently: true }); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height);
     await page.render({ canvasContext: x, viewport: v2 }).promise;
@@ -134,11 +134,16 @@
     return pix;
   }
   function box(p, x0, x1, y0, y1) { return [Math.max(0, Math.floor(x0 * p.s)), Math.min(p.W - 1, Math.ceil(x1 * p.s)), Math.max(0, Math.floor(y0 * p.s)), Math.min(p.H - 1, Math.ceil(y1 * p.s))]; }
-  // latar = warna terbanyak di kotak teks
+  // latar = warna terbanyak di kotak teks (sampel tiap 2 piksel, 4096 kotak warna)
+  const hist = new Uint32Array(4096);
   function bgColor(p, x0, x1, y0, y1) {
-    const [a, b, c, d] = box(p, x0, x1, y0, y1), hist = new Map();
-    for (let yy = c; yy <= d; yy++) for (let xx = a; xx <= b; xx++) { const i = (yy * p.W + xx) * 4, k = (p.data[i] >> 4) << 8 | (p.data[i + 1] >> 4) << 4 | (p.data[i + 2] >> 4); hist.set(k, (hist.get(k) || 0) + 1); }
-    let bk = 0xFFF, bn = -1; for (const [k, n] of hist) if (n > bn) { bn = n; bk = k; }
+    const [a, b, c, d] = box(p, x0, x1, y0, y1);
+    hist.fill(0);
+    let bk = 0xFFF, bn = 0;
+    for (let yy = c; yy <= d; yy += 2) for (let xx = a; xx <= b; xx += 2) {
+      const i = (yy * p.W + xx) * 4, k = (p.data[i] >> 4) << 8 | (p.data[i + 1] >> 4) << 4 | (p.data[i + 2] >> 4), n = ++hist[k];
+      if (n > bn) { bn = n; bk = k; }
+    }
     return [((bk >> 8) & 15) * 17, ((bk >> 4) & 15) * 17, (bk & 15) * 17];
   }
   // tinta = piksel yang paling jauh dari latar; abu-abu gelap = hitam yang tepinya halus → tanpa warna (otomatis)
