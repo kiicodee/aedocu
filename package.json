@@ -1,0 +1,28 @@
+{
+  "name": "aedocu",
+  "version": "1.0.0",
+  "description": "Alat PDF modern dan cepat langsung di browser tanpa upload",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kiicodee/aedocu.git"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "pdf",
+    "compress",
+    "merge",
+    "split",
+    "tools",
+    "offline-first",
+    "pwa"
+  ],
+  "author": "kiicodee",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kiicodee/aedocu/issues"
+  },
+  "homepage": "https://github.com/kiicodee/aedocu#readme"
+}

@@ -1,0 +1,171 @@
+﻿<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PDF ke Word tanpa upload · aedocu</title>
+<meta name="description" content="Ubah PDF jadi dokumen Word (.docx) yang bisa diedit, langsung di browser. Teks, tebal/miring, paragraf, dan gambar ikut. Tanpa upload, tanpa batas, tanpa iklan.">
+<meta name="theme-color" content="#000000">
+<meta property="og:type" content="website">
+<meta property="og:title" content="PDF ke Word tanpa upload · aedocu">
+<meta property="og:description" content="Ubah PDF jadi dokumen Word (.docx) yang bisa diedit, langsung di browser. Teks, tebal/miring, paragraf, dan gambar ikut. Tanpa upload, tanpa batas, tanpa iklan.">
+<meta property="og:image" content="../../icons/icon-512.png">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="../../icons/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="../../icons/favicon-32.png">
+<link rel="apple-touch-icon" href="../../icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="aedocu">
+<script src="../../src/aedocu.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=JetBrains+Mono:wght@400..600&display=swap">
+<link rel="stylesheet" href="../../src/aedocu.css">
+</head>
+<body>
+<div class="app">
+  <aedocu-top data-tool="pdf-ke-word"></aedocu-top>
+
+  <header class="hero sm">
+    <span class="eyebrow">PDF ke Word · tanpa upload</span>
+    <h1>PDF jadi Word yang <mark>bisa diedit.</mark></h1>
+    <p class="lede">Pilih PDF, lalu ubah jadi file <b>.docx</b>. Teks, ukuran huruf, tebal/miring, paragraf, dan gambar ikut dipindahkan, siap diedit di Word, Google Docs, atau WPS. <b>File kamu tidak pernah meninggalkan perangkat ini.</b></p>
+  </header>
+
+  <section class="panel" id="tool" aria-label="Alat PDF ke Word">
+    <div id="vPick">
+      <div id="drop" class="drop big" tabindex="0" role="button" aria-label="Pilih file PDF">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0-4.5 4.5M12 4l4.5 4.5"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg></div>
+        <strong>Tarik PDF ke sini</strong>
+        <span>atau klik untuk memilih · bisa juga <kbd>Ctrl</kbd>+<kbd>V</kbd></span>
+      </div>
+    </div>
+
+    <div id="vEdit" class="panel-in" hidden>
+      <div class="fcard">
+        <div class="thumb"><canvas id="thumb" width="56" height="72"></canvas></div>
+        <div style="min-width:0"><div id="fName" class="nm"></div><div id="fMeta" class="mt"></div></div>
+        <button id="fChange" class="ghost" type="button">Ganti</button>
+      </div>
+      <div id="scanNote"></div>
+      <div class="opts">
+        <div class="opt-row" style="grid-column:1/-1">
+          <div><b>Pertahankan pemisah halaman</b><p>Setiap halaman PDF dimulai di halaman baru di Word, jadi tampilannya paling mirip. Matikan kalau ingin teksnya mengalir terus.</p></div>
+          <label class="sw"><input id="breaks" type="checkbox" checked aria-label="Pertahankan pemisah halaman"><span></span></label>
+        </div>
+      </div>
+      <div class="bar"><h2><span class="num">1</span>Halaman</h2><span class="sub" id="gridSub"></span></div>
+      <div id="grid" class="pages"></div>
+      <div class="cta-wrap">
+        <button id="go" class="cta" type="button" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M8.5 12l1.2 5 1.8-4 1.8 4 1.2-5"/></svg>
+          <span id="goText">Pilih PDF dulu</span>
+        </button>
+      </div>
+    </div>
+
+    <div id="vWork" hidden></div>
+    <div id="vDone" hidden></div>
+    <input id="file" type="file" accept="application/pdf,.pdf" hidden>
+  </section>
+
+  <section class="sec small">
+    <div class="sec-h"><span class="eyebrow">Cara kerja</span><h2>Teks disusun ulang, bukan difoto</h2></div>
+    <ol class="steps3">
+      <li><b>Baca isi PDF</b>Setiap potongan teks dibaca beserta posisi, ukuran, dan jenis hurufnya.</li>
+      <li><b>Susun jadi paragraf</b>Baris disatukan jadi paragraf; rata kiri, tengah, kanan, atau rata kanan-kiri dikenali, begitu juga indentasi dan jarak.</li>
+      <li><b>Simpan sebagai .docx</b>Gambar ikut dalam resolusi aslinya. Hasilnya <span class="mono">nama-file.docx</span>, bisa dibuka di Word, Google Docs, dan WPS.</li>
+    </ol>
+  </section>
+
+  <section class="sec small" id="faq">
+    <div class="sec-h"><span class="eyebrow">FAQ</span><h2>Yang sering ditanyakan</h2></div>
+    <div class="faq">
+      <details><summary>Apakah tata letaknya sama persis?</summary><p>Untuk dokumen satu kolom (surat, laporan, artikel, CV sederhana) hasilnya rapi dan mudah diedit. Tabel diubah jadi teks biasa, dan dokumen dua kolom atau desain yang rumit bisa tersusun kurang rapi. Grafik dan garis yang digambar (bukan gambar) belum ikut, kecuali di halaman yang tidak punya teks.</p></details>
+      <details><summary>PDF hasil scan bisa diedit?</summary><p>Belum. PDF hasil scan isinya foto, bukan teks, jadi butuh pengenalan huruf (OCR). aedocu tetap memasukkan halamannya sebagai gambar di Word dan memberi tahu kamu halaman mana saja.</p></details>
+      <details><summary>Font-nya ikut?</summary><p>Nama font dari PDF dipakai di Word (misalnya Calibri, Arial, Times New Roman). Kalau font itu tidak ada di perangkatmu, Word memakai font pengganti.</p></details>
+      <details><summary>Apakah PDF saya dikirim ke server?</summary><p>Tidak. PDF dibaca dan diubah jadi .docx di browser kamu sendiri.</p></details>
+      <details><summary>Bisa untuk PDF yang dikunci kata sandi?</summary><p>Bisa. aedocu akan meminta kata sandinya lalu membuka kuncinya di perangkat kamu; kata sandinya tidak dikirim ke mana pun. PDF yang hanya dikunci izin dibuka otomatis. Hasilnya tidak lagi berkata sandi.</p></details>
+    </div>
+  </section>
+
+  <aedocu-foot data-tool="pdf-ke-word"></aedocu-foot>
+</div>
+
+<script src="../../src/pdf-alat.js"></script>
+<script src="../../src/zip.js"></script>
+<script src="../../src/pdf-ke-word.js"></script>
+<script>
+(function () {
+  "use strict";
+  const M = window.Aedocu, A = window.Alat, P = window.PdfKeWord, $ = A.$;
+  const TOOL = "pdf-ke-word";
+  const V = A.views(["vPick", "vEdit", "vWork", "vDone"]);
+  let doc = null, busy = false, result = null, loadSeq = 0;
+  M.warmLibs(["pdfjs"], $("drop"));
+  A.pickFiles({ drop: $("drop"), input: $("file"), accept: A.isPdf, kind: "PDF", onFiles: (f) => load(f[0]), enabled: () => !busy });
+  $("fChange").addEventListener("click", () => $("file").click());
+
+  async function load(file) {
+    const my = ++loadSeq;
+    // selama PDF baru dibaca, tombol proses dimatikan (jangan sampai file lama yang diproses)
+    $("go").disabled = true; $("goText").textContent = "Membaca PDF…";
+    try {
+      const r = await A.openPdf(file, false);
+      if (my !== loadSeq) { r.view.destroy(); return; }
+      if (doc) { try { doc.view.destroy(); } catch (e) {} }
+      doc = r;
+      $("fName").textContent = file.name; $("fMeta").textContent = M.fmt(file.size) + " · " + doc.n + " halaman";
+      A.thumb(doc.view, 1, $("thumb"), { box: 72, now: true });
+      const g = $("grid"); g.textContent = "";
+      for (let i = 1; i <= doc.n; i++) {
+        const el = document.createElement("div");
+        el.className = "pg"; el.dataset.p = i;
+        el.innerHTML = '<div class="pv"><span class="no">' + i + '</span><canvas width="1" height="1"></canvas></div>';
+        g.appendChild(el);
+        A.thumb(doc.view, i, el.querySelector("canvas"), { box: 220 });
+      }
+      $("gridSub").textContent = doc.n + " halaman akan diubah";
+      $("go").disabled = false; $("goText").textContent = "Ubah jadi Word (" + doc.n + " halaman)";
+      $("scanNote").innerHTML = "";
+      V.show("vEdit");
+      M.track(TOOL, "pilih", { halaman: doc.n, ukuran: M.bucket(file.size) });
+      // periksa cepat: apakah PDF punya teks (bukan hasil scan)?
+      let chars = 0; const n = Math.min(doc.n, 3);
+      for (let i = 1; i <= n; i++) { const tc = await (await doc.view.getPage(i)).getTextContent(); chars += tc.items.reduce((s, it) => s + (it.str || "").trim().length, 0); }
+      if (my === loadSeq && chars < 10 * n) $("scanNote").innerHTML = '<div class="callout warn"><span>PDF ini sepertinya hasil scan (isinya foto, bukan teks). Halamannya tetap dimasukkan ke Word sebagai gambar, tapi teksnya belum bisa diedit.</span></div>';
+    } catch (e) {
+      M.toast(e.userMsg || "PDF ini tidak bisa dibaca.", true);
+      if (my === loadSeq && doc) { $("go").disabled = false; if (typeof paint === "function") paint(); else if (typeof sync === "function") sync(); else $("goText").textContent = "Ubah jadi Word (" + doc.n + " halaman)"; }
+    }
+  }
+
+  $("go").addEventListener("click", async () => {
+    if ($("go").disabled || !doc) return;
+    busy = true; V.cancelled = false; V.show("vWork"); V.work(0, "Menyiapkan…");
+    try {
+      const base = M.baseName(doc.file.name);
+      const r = await P.convert(doc.view, { title: base, pageBreaks: $("breaks").checked }, (fr, what) => V.work(fr, what), () => V.cancelled);
+      result = { blob: r.blob, name: base + ".docx" };
+      const s = r.stats, bits = [s.paragraphs + " paragraf"];
+      if (s.images) bits.push(s.images + " gambar");
+      let note = "Nama file: <b>" + M.esc(result.name) + "</b>. Isinya " + bits.join(" dan ") + ", siap diedit.";
+      if (s.scanned) note += " " + s.scanned + " halaman hasil scan dimasukkan sebagai gambar (teksnya belum bisa diedit).";
+      V.done({ pill: "PDF jadi Word", big: M.fmt(r.blob.size), from: s.pages + " halaman", note, saveText: "Simpan Word" });
+      M.track(TOOL, "selesai", { halaman: s.pages, scan: s.scanned });
+    } catch (e) {
+      if (e && e.message === "cancelled") M.toast("Proses dibatalkan.");
+      else { console.error(e); M.toast("Ada masalah saat membuat file Word. Coba lagi atau pakai file lain.", true); }
+      V.show("vEdit");
+    } finally { busy = false; }
+  });
+  $("dSave").addEventListener("click", async () => { if (result && await M.saveFile(result.blob, result.name)) M.track(TOOL, "unduh", { ukuran: M.bucket(result.blob.size) }); });
+  $("dBack").addEventListener("click", () => V.show("vEdit"));
+  $("dNew").addEventListener("click", () => $("file").click());
+})();
+</script>
+</body>
+</html>
+
+

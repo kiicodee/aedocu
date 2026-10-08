@@ -1,0 +1,193 @@
+﻿<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Word ke PDF tanpa upload · aedocu</title>
+<meta name="description" content="Ubah dokumen Word (.docx) jadi PDF langsung di browser. Teks tetap bisa dipilih, link tetap bisa diklik. Tanpa upload, tanpa batas, tanpa iklan.">
+<meta name="theme-color" content="#000000">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Word ke PDF tanpa upload · aedocu">
+<meta property="og:description" content="Ubah dokumen Word (.docx) jadi PDF langsung di browser. Teks tetap bisa dipilih, link tetap bisa diklik. Tanpa upload, tanpa batas, tanpa iklan.">
+<meta property="og:image" content="../../icons/icon-512.png">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="../../icons/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="../../icons/favicon-32.png">
+<link rel="apple-touch-icon" href="../../icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="aedocu">
+<script src="../../src/aedocu.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=JetBrains+Mono:wght@400..600&display=swap">
+<link rel="stylesheet" href="../../src/aedocu.css">
+<style>
+/* pratinjau dokumen: halaman Word diperkecil supaya muat di layar */
+.wprev { position: relative; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r); overflow: auto; max-height: min(78vh, 900px); }
+.wprev .scaler { position: relative; overflow: hidden; margin: 0 auto; }
+.wprev .host { position: absolute; top: 0; left: 0; transform-origin: 0 0; }
+.wprev .docx-wrapper { background: transparent !important; padding: 18px !important; }
+.wprev .docx-wrapper > section.docx { box-shadow: 0 1px 3px rgba(0,0,0,.18), 0 10px 26px -14px rgba(0,0,0,.35) !important; margin-bottom: 18px !important; }
+.wprev .host.mp-measure { transform: none !important; }
+/* selama diubah ke PDF, dokumen dipindah ke luar layar supaya tetap tersusun walau panel disembunyikan */
+.park { position: fixed; left: -300vw; top: 0; pointer-events: none; }
+.park .host { transform: none !important; position: static; }
+.wbusy { display: grid; place-items: center; gap: 10px; padding: 48px 16px; text-align: center; color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <aedocu-top data-tool="word-ke-pdf"></aedocu-top>
+
+  <header class="hero sm">
+    <span class="eyebrow">Word ke PDF · tanpa upload</span>
+    <h1>Dokumen Word jadi <mark>PDF rapi.</mark></h1>
+    <p class="lede">Pilih file <b>.docx</b>, lihat pratinjau setiap halamannya, lalu ubah jadi PDF. Teks tetap bisa dipilih dan dicari, link tetap bisa diklik, dan <b>dokumen kamu tidak pernah meninggalkan perangkat ini</b>.</p>
+  </header>
+
+  <section class="panel" id="tool" aria-label="Alat Word ke PDF">
+    <div id="vPick">
+      <div id="drop" class="drop big" tabindex="0" role="button" aria-label="Pilih file Word">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0-4.5 4.5M12 4l4.5 4.5"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg></div>
+        <strong>Tarik file Word ke sini</strong>
+        <span>file .docx · atau klik untuk memilih</span>
+      </div>
+    </div>
+
+    <div id="vEdit" class="panel-in" hidden>
+      <div class="fcard">
+        <div class="thumb"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M8.5 12l1.2 5 1.8-4 1.8 4 1.2-5"/></svg></div>
+        <div style="min-width:0"><div id="fName" class="nm"></div><div id="fMeta" class="mt"></div></div>
+        <button id="fChange" class="ghost" type="button">Ganti</button>
+      </div>
+      <div class="bar"><h2><span class="num">1</span>Pratinjau</h2><span class="sub" id="prevSub"></span></div>
+      <div class="wprev" id="wprev">
+        <div class="wbusy" id="wbusy">Menyusun dokumen…</div>
+        <div class="scaler" id="scaler"><div class="host" id="host"></div></div>
+      </div>
+      <div id="wNote"></div>
+      <div class="cta-wrap">
+        <button id="go" class="cta" type="button" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>
+          <span id="goText">Menyusun dokumen…</span>
+        </button>
+      </div>
+    </div>
+
+    <div id="vWork" hidden></div>
+    <div id="vDone" hidden></div>
+    <div class="park" id="park" aria-hidden="true"></div>
+    <input id="file" type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
+  </section>
+
+  <section class="sec small">
+    <div class="sec-h"><span class="eyebrow">Cara kerja</span><h2>Seperti "Simpan sebagai PDF", tapi di browser</h2></div>
+    <ol class="steps3">
+      <li><b>Dokumen disusun di perangkatmu</b>File .docx dibaca langsung oleh browser: paragraf, tabel, gambar, header, footer, dan nomor daftar.</li>
+      <li><b>Font diganti kembarannya</b>Calibri, Cambria, Times New Roman, Arial, dan Courier New diganti font gratis yang ukuran hurufnya sama, jadi tata letaknya tidak bergeser.</li>
+      <li><b>Digambar ulang jadi PDF</b>Teks ditulis sebagai teks sungguhan (bisa dipilih dan dicari), bukan foto halaman. Hasilnya <span class="mono">nama-file.pdf</span>.</li>
+    </ol>
+  </section>
+
+  <section class="sec small" id="faq">
+    <div class="sec-h"><span class="eyebrow">FAQ</span><h2>Yang sering ditanyakan</h2></div>
+    <div class="faq">
+      <details><summary>Apakah hasilnya sama persis dengan di Microsoft Word?</summary><p>Untuk dokumen biasa (tugas, laporan, surat, CV) hasilnya sangat mirip: paragraf, ukuran huruf, tebal/miring, tabel, gambar, daftar bernomor, header, dan footer ikut. Yang belum didukung: text box dan bentuk (shape) yang melayang, SmartArt, grafik, dan rumus matematika. Selalu cek pratinjaunya sebelum menyimpan.</p></details>
+      <details><summary>Kenapa hurufnya sedikit berbeda?</summary><p>Font bawaan Microsoft (Calibri, Cambria, Times New Roman, Arial) tidak boleh dibagikan bebas, jadi aedocu memakai kembarannya yang gratis: Carlito, Caladea, Tinos, Arimo, dan Cousine. Lebar setiap hurufnya sama, jadi baris dan halaman tetap pecah di tempat yang sama. Font lain diganti yang paling mirip.</p></details>
+      <details><summary>Bisa untuk file .doc yang lama?</summary><p>Belum. Buka dulu di Word, Google Docs, atau WPS, lalu simpan sebagai .docx.</p></details>
+      <details><summary>Apakah dokumen saya dikirim ke server?</summary><p>Tidak. Yang diunduh dari internet hanya aplikasinya dan font penggantinya. Dokumen kamu dibaca, disusun, dan diubah jadi PDF di browser kamu sendiri.</p></details>
+      <details><summary>Bisa dipakai offline?</summary><p>Bisa, setelah alat ini pernah dipakai sekali saat online (font yang pernah dipakai ikut tersimpan). Kalau ada font yang belum tersimpan saat offline, aedocu memakai font standar dan memberi tahu kamu.</p></details>
+    </div>
+  </section>
+
+  <aedocu-foot data-tool="word-ke-pdf"></aedocu-foot>
+</div>
+
+<script src="../../src/pdf-alat.js"></script>
+<script src="../../src/ttf-subset.js"></script>
+<script src="../../src/word-ke-pdf.js"></script>
+<script>
+(function () {
+  "use strict";
+  const M = window.Aedocu, A = window.Alat, W = window.WordKePdf, $ = A.$;
+  const TOOL = "word-ke-pdf";
+  const V = A.views(["vPick", "vEdit", "vWork", "vDone"]);
+  const isDocx = (f) => /\.docx$/i.test(f.name) || f.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+  let file = null, info = null, busy = false, result = null, seq = 0;
+  M.warmLibs(["pdflib"], $("drop"));
+  // .doc lama ikut diterima supaya bisa diberi pesan yang tepat
+  A.pickFiles({ drop: $("drop"), input: $("file"), accept: (f) => isDocx(f) || /\.doc$/i.test(f.name), kind: "dokumen Word", onFiles: (f) => load(f[0]), enabled: () => !busy });
+  $("fChange").addEventListener("click", () => $("file").click());
+
+  function fit() {
+    const wrap = $("host").querySelector(".docx-wrapper");
+    if (!wrap) return;
+    const avail = $("wprev").clientWidth, w = wrap.scrollWidth, h = wrap.scrollHeight, s = Math.min(1, avail / w);
+    $("host").style.transform = "scale(" + s + ")";
+    $("scaler").style.width = w * s + "px"; $("scaler").style.height = h * s + "px";
+  }
+  let rt = null; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(fit, 120); });
+
+  async function load(f) {
+    if (busy) return;
+    const my = ++seq;
+    file = f; info = null; result = null;
+    $("fName").textContent = f.name; $("fMeta").textContent = M.fmt(f.size) + " · menyusun…";
+    $("host").textContent = ""; $("scaler").style.height = "0"; $("wbusy").hidden = false; $("wbusy").textContent = "Menyiapkan mesin Word…";
+    $("wNote").innerHTML = ""; $("go").disabled = true; $("goText").textContent = "Menyusun dokumen…"; $("prevSub").textContent = "";
+    V.show("vEdit");
+    try {
+      const bytes = new Uint8Array(await f.arrayBuffer());
+      if (bytes[0] !== 0x50 || bytes[1] !== 0x4B) {
+        const old = bytes[0] === 0xD0 && bytes[1] === 0xCF;
+        throw Object.assign(new Error("bukan zip"), { userMsg: old && /\.doc$/i.test(f.name) ? "File .doc lama belum didukung. Buka di Word, Google Docs, atau WPS, lalu simpan sebagai .docx." : old ? "File Word ini dikunci kata sandi. Simpan ulang tanpa kata sandi, lalu coba lagi." : "Ini bukan file .docx yang valid. Mungkin filenya rusak." });
+      }
+      $("wbusy").textContent = "Menyusun halaman dan font…";
+      const r = await W.render(bytes, $("host"));
+      if (my !== seq) return;
+      info = r;
+      $("wbusy").hidden = true; fit();
+      $("fMeta").textContent = M.fmt(f.size) + " · " + r.pages + " halaman";
+      $("prevSub").textContent = r.pages + " halaman · geser untuk melihat semuanya";
+      const notes = [];
+      if (r.missingFonts.length) notes.push("Font " + r.missingFonts.join(", ") + " belum bisa diunduh (mungkin sedang offline), jadi dipakai font standar.");
+      $("wNote").innerHTML = notes.length ? '<div class="callout warn"><span>' + M.esc(notes.join(" ")) + "</span></div>" : "";
+      $("go").disabled = false; $("goText").textContent = "Ubah jadi PDF (" + r.pages + " halaman)";
+      M.track(TOOL, "pilih", { halaman: r.pages, ukuran: M.bucket(f.size) });
+    } catch (e) {
+      console.error(e);
+      if (my !== seq) return;
+      M.toast(e.userMsg || (/Gagal memuat/.test(e && e.message) ? M.pdfError(e) : "File Word ini tidak bisa dibaca. Pastikan formatnya .docx dan filenya tidak rusak."), true);
+      V.show("vPick");
+    }
+  }
+
+  $("go").addEventListener("click", async () => {
+    if ($("go").disabled || !info) return;
+    busy = true; V.cancelled = false;
+    $("park").appendChild($("host")); V.show("vWork"); V.work(0, "Menyiapkan…");
+    try {
+      const r = await W.convert($("host"), (fr, what) => V.work(fr * 0.95, what), () => V.cancelled);
+      result = { bytes: r.bytes, name: M.baseName(file.name) + ".pdf" };
+      const bits = [];
+      if (r.stats.skippedImages) bits.push(r.stats.skippedImages + " gambar format lama (EMF/WMF) belum bisa ditampilkan");
+      if (r.stats.rasterWords) bits.push(r.stats.rasterWords + " kata berhuruf khusus disimpan sebagai gambar kecil");
+      V.done({ pill: "Word jadi PDF", big: M.fmt(r.bytes.length), from: r.pages + " halaman", note: "Nama file: <b>" + M.esc(result.name) + "</b>. Teks bisa dipilih dan dicari." + (bits.length ? " Catatan: " + M.esc(bits.join("; ")) + "." : ""), saveText: "Simpan PDF" });
+      M.track(TOOL, "selesai", { halaman: r.pages });
+    } catch (e) {
+      if (e && e.message === "cancelled") M.toast("Proses dibatalkan.");
+      else { console.error(e); M.toast("Ada masalah saat membuat PDF. Coba lagi atau pakai file lain.", true); }
+      V.show("vEdit"); fit();
+    } finally { busy = false; $("scaler").appendChild($("host")); }
+  });
+  $("dSave").addEventListener("click", async () => { if (result && await M.saveFile(new Blob([result.bytes], { type: "application/pdf" }), result.name)) M.track(TOOL, "unduh", { ukuran: M.bucket(result.bytes.length) }); });
+  $("dBack").addEventListener("click", () => { V.show("vEdit"); fit(); });
+  $("dNew").addEventListener("click", () => $("file").click());
+})();
+</script>
+</body>
+</html>
+
+

@@ -1,0 +1,218 @@
+﻿<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Atur halaman PDF tanpa upload · aedocu</title>
+<meta name="description" content="Putar, hapus, dan urutkan ulang halaman PDF dengan thumbnail. Diproses di perangkatmu: tanpa upload, tanpa batas, tanpa iklan.">
+<meta name="theme-color" content="#000000">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Atur halaman PDF tanpa upload · aedocu">
+<meta property="og:description" content="Putar, hapus, dan urutkan ulang halaman PDF dengan thumbnail. Diproses di perangkatmu: tanpa upload, tanpa batas, tanpa iklan.">
+<meta property="og:image" content="../../icons/icon-512.png">
+<link rel="manifest" href="../../manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="../../icons/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="../../icons/favicon-32.png">
+<link rel="apple-touch-icon" href="../../icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="aedocu">
+<script src="../../src/aedocu.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=JetBrains+Mono:wght@400..600&display=swap">
+<link rel="stylesheet" href="../../src/aedocu.css">
+</head>
+<body>
+<div class="app">
+  <aedocu-top data-tool="atur-halaman"></aedocu-top>
+
+  <header class="hero sm">
+    <span class="eyebrow">Atur halaman · tanpa upload</span>
+    <h1>Putar, hapus, <mark>urutkan.</mark></h1>
+    <p class="lede">Halaman yang miring, terbalik, atau tidak perlu? Atur semuanya langsung di thumbnail, lalu simpan jadi PDF baru. <b>File kamu tidak pernah meninggalkan perangkat ini.</b></p>
+  </header>
+
+  <section class="panel" id="tool" aria-label="Alat atur halaman PDF">
+    <div id="vPick">
+      <div id="drop" class="drop big" tabindex="0" role="button" aria-label="Pilih file PDF">
+        <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4m0 0-4.5 4.5M12 4l4.5 4.5"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg></div>
+        <strong>Tarik PDF ke sini</strong>
+        <span>atau klik untuk memilih · bisa juga <kbd>Ctrl</kbd>+<kbd>V</kbd></span>
+      </div>
+    </div>
+
+    <div id="vEdit" class="panel-in" hidden>
+      <div class="fcard">
+        <div class="thumb"><canvas id="thumb" width="56" height="72"></canvas></div>
+        <div style="min-width:0"><div id="fName" class="nm"></div><div id="fMeta" class="mt"></div></div>
+        <button id="fChange" class="ghost" type="button">Ganti</button>
+      </div>
+      <div class="bar">
+        <h2><span class="num">1</span>Atur halaman</h2>
+        <div class="btns">
+          <button class="ghost" type="button" data-all="rotL">Putar semua ↺</button>
+          <button class="ghost" type="button" data-all="rotR">Putar semua ↻</button>
+          <button class="ghost" type="button" data-all="reverse">Balik urutan</button>
+          <button class="ghost" type="button" data-all="reset">Kembalikan semula</button>
+        </div>
+      </div>
+      <p class="note">Tarik pegangan <span aria-hidden="true">⠿</span> untuk memindah halaman (atau fokuskan lalu tekan panah kiri/kanan). Halaman yang dihapus bisa dikembalikan sebelum disimpan.</p>
+      <div id="grid" class="pages"></div>
+      <div class="cta-wrap">
+        <button id="go" class="cta" type="button" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>
+          <span id="goText">Simpan perubahan</span>
+        </button>
+      </div>
+    </div>
+
+    <div id="vWork" hidden></div>
+    <div id="vDone" hidden></div>
+    <input id="file" type="file" accept="application/pdf,.pdf" hidden>
+  </section>
+
+  <section class="sec small">
+    <div class="sec-h"><span class="eyebrow">Cara pakai</span><h2>Rapikan PDF dalam semenit</h2></div>
+    <ol class="steps3">
+      <li><b>Pilih PDF</b>Semua halaman tampil sebagai thumbnail.</li>
+      <li><b>Putar, hapus, pindah</b>Pakai tombol ↺ ↻ untuk memutar, tempat sampah untuk menghapus, dan tarik untuk mengurutkan.</li>
+      <li><b>Simpan</b>Hasilnya PDF baru bernama <span class="mono">nama-file-diatur.pdf</span>. File aslinya tidak diubah.</li>
+    </ol>
+  </section>
+
+  <section class="sec small" id="faq">
+    <div class="sec-h"><span class="eyebrow">FAQ</span><h2>Yang sering ditanyakan</h2></div>
+    <div class="faq">
+      <details><summary>Apakah memutar halaman menurunkan kualitas?</summary><p>Tidak. aedocu hanya mengubah arah tampil halaman, isinya tidak digambar ulang. Teks tetap bisa dipilih dan dicari.</p></details>
+      <details><summary>Bisa menambah halaman dari PDF lain?</summary><p>Pakai alat Gabung PDF dulu untuk menyatukan file, lalu atur hasilnya di sini.</p></details>
+      <details><summary>Bisa untuk PDF yang dikunci kata sandi?</summary><p>Bisa. aedocu akan meminta kata sandinya lalu membuka kuncinya di perangkat kamu; kata sandinya tidak dikirim ke mana pun. PDF yang hanya dikunci izin dibuka otomatis. Hasilnya tidak lagi berkata sandi.</p></details>
+    </div>
+  </section>
+
+  <aedocu-foot data-tool="atur-halaman"></aedocu-foot>
+</div>
+
+<script src="../../src/pdf-alat.js"></script>
+<script>
+(function () {
+  "use strict";
+  const M = window.Aedocu, A = window.Alat, $ = A.$;
+  const TOOL = "atur-halaman";
+  const V = A.views(["vPick", "vEdit", "vWork", "vDone"]);
+  let doc = null, pages = [], busy = false, result = null, loadSeq = 0;
+  M.warmLibs(["pdfjs", "pdflib"], $("drop"));
+  A.pickFiles({ drop: $("drop"), input: $("file"), accept: A.isPdf, kind: "PDF", onFiles: (f) => load(f[0]), enabled: () => !busy });
+  $("fChange").addEventListener("click", () => $("file").click());
+  const grid = $("grid");
+  A.sortable(grid, { items: ".pg", handle: matchMedia("(pointer: fine)").matches ? ".pv, .handle" : ".handle", onChange: sync });
+
+  async function load(file) {
+    const my = ++loadSeq;
+    // selama PDF baru dibaca, tombol proses dimatikan (jangan sampai file lama yang diproses)
+    $("go").disabled = true; $("goText").textContent = "Membaca PDF…";
+    try {
+      const r = await A.openPdf(file, true);
+      if (my !== loadSeq) { r.view.destroy(); return; }
+      if (doc) { try { doc.view.destroy(); } catch (e) {} }
+      doc = r;
+      $("fName").textContent = file.name; $("fMeta").textContent = M.fmt(file.size) + " · " + doc.n + " halaman";
+      A.thumb(doc.view, 1, $("thumb"), { box: 72, now: true });
+      build(); V.show("vEdit");
+      M.track(TOOL, "pilih", { halaman: doc.n, ukuran: M.bucket(file.size) });
+    } catch (e) {
+      M.toast(e.userMsg || "PDF ini tidak bisa dibaca.", true);
+      if (my === loadSeq && doc) { $("go").disabled = false; if (typeof paint === "function") paint(); else if (typeof sync === "function") sync(); else $("goText").textContent = "Ubah jadi Word (" + doc.n + " halaman)"; }
+    }
+  }
+  function build() {
+    grid.textContent = "";
+    pages = [];
+    for (let i = 0; i < doc.n; i++) {
+      const p = { i, rot: 0, del: false, el: document.createElement("div") };
+      p.el.className = "pg"; p.el.dataset.i = i;
+      p.el.innerHTML = '<div class="pv"><span class="no"></span><canvas width="1" height="1"></canvas></div>' +
+        '<div class="cap"><span>hal. asli <b>' + (i + 1) + '</b></span><span class="rot mono"></span></div>' +
+        '<div class="row"><button class="ib" type="button" data-act="rotL" aria-label="Putar ke kiri">' + A.ICON.rotL + '</button>' +
+        '<button class="ib" type="button" data-act="rotR" aria-label="Putar ke kanan">' + A.ICON.rotR + '</button>' +
+        '<button class="ib handle" type="button" aria-label="Pindah halaman ' + (i + 1) + ': tarik, atau tekan panah kiri/kanan">' + A.ICON.grip + '</button>' +
+        '<button class="ib bad" type="button" data-act="del" aria-label="Hapus halaman">' + A.ICON.trash + "</button></div>";
+      grid.appendChild(p.el); pages.push(p);
+      A.thumb(doc.view, i + 1, p.el.querySelector("canvas"), { box: 220 });
+    }
+    sync();
+  }
+  // urutan pages mengikuti DOM, lalu perbarui nomor & tombol
+  function sync() {
+    const order = [...grid.querySelectorAll(".pg")].map((el) => +el.dataset.i);
+    pages.sort((a, b) => order.indexOf(a.i) - order.indexOf(b.i));
+    let pos = 0;
+    pages.forEach((p) => {
+      p.el.classList.toggle("off", p.del);
+      p.el.querySelector(".no").textContent = p.del ? "–" : ++pos;
+      p.el.querySelector(".rot").textContent = p.rot ? (p.rot > 0 ? "↻ " : "↺ ") + Math.abs(p.rot) + "°" : "";
+      const d = p.el.querySelector('[data-act="del"]');
+      d.innerHTML = p.del ? A.ICON.undo : A.ICON.trash; d.setAttribute("aria-label", p.del ? "Kembalikan halaman" : "Hapus halaman");
+      d.classList.toggle("bad", !p.del);
+    });
+    const kept = pages.filter((p) => !p.del).length;
+    $("go").disabled = busy || !kept;
+    $("goText").textContent = !kept ? "Semua halaman dihapus" : "Simpan PDF (" + kept + " halaman)";
+  }
+  function rotate(p, d) {
+    p.rot = ((p.rot + d + 540) % 360) - 180; if (p.rot === -180) p.rot = 180;
+    A.rethumb(p.el.querySelector("canvas"), p.rot);
+  }
+  grid.addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-act]"); if (!b) return;
+    const p = pages.find((x) => x.el === b.closest(".pg"));
+    if (b.dataset.act === "del") p.del = !p.del; else rotate(p, b.dataset.act === "rotR" ? 90 : -90);
+    sync();
+  });
+  grid.addEventListener("keydown", (e) => {
+    const h = e.target.closest(".handle"); if (!h || (e.key !== "ArrowLeft" && e.key !== "ArrowRight")) return;
+    e.preventDefault();
+    if (A.moveBy(h.closest(".pg"), e.key === "ArrowLeft" ? -1 : 1, ".pg")) { sync(); h.focus(); }
+  });
+  document.querySelector(".bar .btns").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-all]"); if (!b || !doc) return;
+    const a = b.dataset.all;
+    if (a === "rotL" || a === "rotR") pages.forEach((p) => rotate(p, a === "rotR" ? 90 : -90));
+    else if (a === "reverse") pages.slice().reverse().forEach((p) => grid.appendChild(p.el));
+    else if (a === "reset") { pages.forEach((p) => { if (p.rot) { p.rot = 0; A.rethumb(p.el.querySelector("canvas"), 0); } p.del = false; }); pages.slice().sort((x, y) => x.i - y.i).forEach((p) => grid.appendChild(p.el)); }
+    sync();
+  });
+
+  $("go").addEventListener("click", async () => {
+    if ($("go").disabled) return;
+    busy = true; V.cancelled = false; V.show("vWork"); V.work(0.1, "Menyusun halaman…");
+    try {
+      const { PDFDocument, degrees } = PDFLib;
+      const kept = pages.filter((p) => !p.del);
+      const out = await PDFDocument.create({ updateMetadata: false });
+      const copied = await out.copyPages(doc.edit, kept.map((p) => p.i));
+      copied.forEach((pg, k) => {
+        const base = pg.getRotation().angle || 0;
+        if (kept[k].rot) pg.setRotation(degrees((((base + kept[k].rot) % 360) + 360) % 360));
+        out.addPage(pg);
+      });
+      V.work(0.6, "Menyimpan PDF…");
+      out.setProducer("aedocu"); out.setCreator("aedocu · Atur Halaman");
+      const bytes = await out.save({ useObjectStreams: true });
+      result = { bytes, name: M.baseName(doc.file.name) + "-diatur.pdf" };
+      const del = pages.length - kept.length, rot = kept.filter((p) => p.rot).length;
+      const bits = []; if (rot) bits.push(rot + " diputar"); if (del) bits.push(del + " dihapus");
+      V.done({ pill: kept.length + " halaman" + (bits.length ? " · " + bits.join(", ") : ""), big: M.fmt(bytes.length), from: "dari " + M.fmt(doc.file.size), note: "Nama file: <b>" + M.esc(result.name) + "</b>", saveText: "Simpan PDF" });
+      M.track(TOOL, "selesai", { halaman: kept.length, diputar: rot, dihapus: del });
+    } catch (e) { console.error(e); M.toast("Ada masalah saat menyimpan. Coba lagi atau pakai file lain.", true); V.show("vEdit"); }
+    finally { busy = false; sync(); }
+  });
+  $("dSave").addEventListener("click", async () => { if (result && await M.saveFile(new Blob([result.bytes], { type: "application/pdf" }), result.name)) M.track(TOOL, "unduh", { ukuran: M.bucket(result.bytes.length) }); });
+  $("dBack").addEventListener("click", () => V.show("vEdit"));
+  $("dNew").addEventListener("click", () => $("file").click());
+})();
+</script>
+</body>
+</html>
+
+

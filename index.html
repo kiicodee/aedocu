@@ -3,33 +3,34 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Mampat · Alat PDF tanpa upload</title>
+<title>aedocu · Alat PDF tanpa upload</title>
 <meta name="description" content="Kompres, gabung, pisah, atur halaman, dan ubah PDF ke gambar atau sebaliknya. Semua diproses di perangkatmu: tanpa upload, tanpa batas, tanpa iklan, bisa offline.">
-<meta name="theme-color" content="#ffd02b">
+<meta name="theme-color" content="#000000">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Mampat · Alat PDF tanpa upload">
+<meta property="og:title" content="aedocu · Alat PDF tanpa upload">
 <meta property="og:description" content="Kompres, gabung, pisah, atur halaman, dan ubah PDF ke gambar atau sebaliknya. Semua diproses di perangkatmu: tanpa upload, tanpa batas, tanpa iklan, bisa offline.">
-<meta property="og:image" content="icon-512.png">
+<meta property="og:image" content="icons/icon-512.png">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" href="favicon-32.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/svg+xml" href="icons/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Mampat">
+<meta name="apple-mobile-web-app-title" content="aedocu">
 <script>
-  // link lama ke bagian alat kompres (#tool, #cara, #beda, #faq) sekarang ada di /kompres/
-  function toKompres() { if (/^#(tool|cara|beda|faq)$/.test(location.hash)) location.replace("kompres/" + location.hash); }
+  // redirect hash links yang lama ke tools/kompres/
+  function toKompres() { if (/^#(tool|cara|beda|faq)$/.test(location.hash)) location.replace("tools/kompres/" + location.hash); }
   toKompres(); window.addEventListener("hashchange", toKompres);
 </script>
-<script src="assets/mampat.js"></script>
+<script src="src/aedocu.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..900&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400..700&family=JetBrains+Mono:wght@400..600&display=optional">
-<link rel="stylesheet" href="assets/mampat.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=JetBrains+Mono:wght@400..600&display=swap">
+<link rel="stylesheet" href="src/aedocu.css">
 </head>
 <body>
+<div class="page-bg"></div>
 <div class="app">
-  <mampat-top></mampat-top>
+  <aedocu-top></aedocu-top>
 
   <header class="hero home">
     <span class="eyebrow">Alat PDF · diproses di perangkatmu</span>
@@ -37,7 +38,7 @@
     <p class="lede">Kompres, gabung, pisah, atur halaman, sampai ubah PDF jadi gambar. Semuanya dikerjakan browser kamu sendiri, jadi <b>file tidak pernah dikirim ke mana pun</b>. Gratis, tanpa akun, tanpa batas, tanpa iklan.</p>
   </header>
 
-  <a class="feat" href="kompres/" data-tool="kompres">
+  <a class="feat" href="tools/kompres/" data-tool="kompres">
     <div class="txt">
       <span class="eyebrow">Paling sering dipakai</span>
       <h2>Kompres PDF ke ukuran yang kamu mau</h2>
@@ -45,19 +46,19 @@
       <span class="go">Kompres sekarang<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m0 0-6-6m6 6-6 6"/></svg></span>
     </div>
     <svg class="art" viewBox="0 0 320 200" aria-hidden="true">
-      <g fill="none" stroke="var(--ink)" stroke-width="1.6">
-        <rect x="22" y="30" width="96" height="128" rx="6" fill="var(--surface)"/>
-        <rect x="30" y="22" width="96" height="128" rx="6" fill="var(--surface)"/>
-        <rect x="38" y="14" width="96" height="128" rx="6" fill="var(--surface)"/>
+      <g fill="none" stroke="rgba(255,255,255,.12)" stroke-width="1.6">
+        <rect x="22" y="30" width="96" height="128" rx="6" fill="rgba(22,22,23,.8)"/>
+        <rect x="30" y="22" width="96" height="128" rx="6" fill="rgba(22,22,23,.9)"/>
+        <rect x="38" y="14" width="96" height="128" rx="6" fill="rgba(28,28,30,.95)"/>
       </g>
-      <g stroke="var(--line)" stroke-width="5" stroke-linecap="round"><path d="M52 40h60M52 54h68M52 68h48M52 82h64M52 96h40"/></g>
-      <path d="M150 80h26m0 0-8-8m8 8-8 8" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      <rect x="196" y="44" width="100" height="10" rx="3" fill="var(--ink)"/>
-      <rect x="206" y="62" width="80" height="48" rx="5" fill="var(--accent)" stroke="var(--ink)" stroke-width="1.6"/>
-      <path d="M218 78h56M218 90h40" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>
-      <rect x="196" y="118" width="100" height="10" rx="3" fill="var(--ink)"/>
-      <text x="78" y="186" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="15" font-weight="600" fill="var(--ink)">12,4 MB</text>
-      <text x="246" y="186" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="15" font-weight="600" fill="var(--ink)">480 KB</text>
+      <g stroke="rgba(255,255,255,.25)" stroke-width="4" stroke-linecap="round"><path d="M52 40h60M52 54h68M52 68h48M52 82h64M52 96h40"/></g>
+      <path d="M150 80h26m0 0-8-8m8 8-8 8" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <rect x="196" y="44" width="100" height="10" rx="3" fill="rgba(255,255,255,.15)"/>
+      <rect x="206" y="62" width="80" height="48" rx="5" fill="rgba(0,113,227,.3)" stroke="rgba(0,113,227,.5)" stroke-width="1.6"/>
+      <path d="M218 78h56M218 90h40" stroke="rgba(255,255,255,.5)" stroke-width="3" stroke-linecap="round"/>
+      <rect x="196" y="118" width="100" height="10" rx="3" fill="rgba(255,255,255,.15)"/>
+      <text x="78" y="186" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="600" fill="rgba(255,255,255,.5)">12,4 MB</text>
+      <text x="246" y="186" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="14" font-weight="600" fill="rgba(0,113,227,.9)">480 KB</text>
     </svg>
   </a>
 
@@ -72,24 +73,24 @@
   <section class="sec small" id="faq">
     <div class="sec-h"><span class="eyebrow">FAQ</span><h2>Yang sering ditanyakan</h2></div>
     <div class="faq">
-      <details><summary>Apakah file saya diunggah ke server?</summary><p>Tidak. Semua alat di Mampat bekerja di dalam browser kamu. File dibaca, diproses, lalu disimpan lagi di perangkatmu sendiri. Tidak ada salinan yang dikirim atau disimpan di tempat lain.</p></details>
+      <details><summary>Apakah file saya diunggah ke server?</summary><p>Tidak. Semua alat di aedocu bekerja di dalam browser kamu. File dibaca, diproses, lalu disimpan lagi di perangkatmu sendiri. Tidak ada salinan yang dikirim atau disimpan di tempat lain.</p></details>
       <details><summary>Benar-benar gratis dan tanpa batas?</summary><p>Ya. Tidak perlu akun, tidak ada kuota harian, dan tidak ada batas ukuran file. Batasnya hanya memori perangkatmu: file ratusan MB biasanya lancar di laptop, di HP prosesnya lebih lama.</p></details>
-      <details><summary>Bisa dipakai tanpa internet?</summary><p>Bisa. Buka Mampat sekali saat online, setelah itu semua alat tersimpan di browser dan tetap jalan walaupun offline.</p></details>
-      <details><summary>Bagaimana cara memasang Mampat di HP?</summary><p>Di Chrome Android, tekan "Pasang aplikasi" di atas atau menu ⋮ lalu "Tambahkan ke layar utama". Di iPhone, buka lewat Safari, tekan tombol Bagikan, lalu "Tambahkan ke Layar Utama".</p></details>
-      <details><summary>Bisa untuk PDF yang dikunci kata sandi?</summary><p>Bisa. Mampat akan meminta kata sandinya lalu membuka kuncinya di perangkat kamu; kata sandinya tidak dikirim ke mana pun. PDF yang hanya dikunci izin dibuka otomatis. Hasilnya tidak lagi berkata sandi.</p></details>
+      <details><summary>Bisa dipakai tanpa internet?</summary><p>Bisa. Buka aedocu sekali saat online, setelah itu semua alat tersimpan di browser dan tetap jalan walaupun offline.</p></details>
+      <details><summary>Bagaimana cara memasang aedocu di HP?</summary><p>Di Chrome Android, tekan "Pasang aplikasi" di atas atau menu ⋮ lalu "Tambahkan ke layar utama". Di iPhone, buka lewat Safari, tekan tombol Bagikan, lalu "Tambahkan ke Layar Utama".</p></details>
+      <details><summary>Bisa untuk PDF yang dikunci kata sandi?</summary><p>Bisa. aedocu akan meminta kata sandinya lalu membuka kuncinya di perangkat kamu; kata sandinya tidak dikirim ke mana pun. PDF yang hanya dikunci izin dibuka otomatis. Hasilnya tidak lagi berkata sandi.</p></details>
     </div>
   </section>
 
-  <mampat-foot data-no-others></mampat-foot>
+  <aedocu-foot data-no-others></aedocu-foot>
 </div>
 
 <script>
 (function () {
   "use strict";
-  const M = window.Mampat;
+  const M = window.Aedocu;
   // kartu alat selain kompres, dari daftar alat bersama
   document.getElementById("cards").innerHTML = M.TOOLS.filter((t) => t.slug !== "kompres").map((t, i) =>
-    '<a class="card' + (i === 0 ? " wide" : "") + '" href="' + t.slug + '/" data-tool="' + t.slug + '"><span class="ti">' + t.icon + "</span><h3>" + t.name + (t.isNew ? ' <span class="new">Baru</span>' : "") + "</h3><p>" + t.desc + "</p></a>").join("");
+    '<a class="card' + (i === 0 ? " wide" : "") + '" href="tools/' + t.slug + '/" data-tool="' + t.slug + '"><span class="ti">' + t.icon + "</span><h3>" + t.name + (t.isNew ? ' <span class="new">Baru</span>' : "") + "</h3><p>" + t.desc + "</p></a>").join("");
   document.addEventListener("click", (e) => { const a = e.target.closest("a[data-tool]"); if (a && !a.closest(".tmenu")) M.track("beranda", "buka-" + a.dataset.tool); });
 })();
 </script>
