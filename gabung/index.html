@@ -79,8 +79,8 @@
     <div class="faq">
       <details><summary>Apakah ada batas jumlah atau ukuran file?</summary><p>Tidak ada. Batasnya hanya memori perangkatmu. Puluhan file dengan ratusan halaman biasanya lancar di laptop.</p></details>
       <details><summary>Apakah kualitasnya turun?</summary><p>Tidak. Halaman disalin apa adanya, tidak dikompres ulang. Kalau hasilnya terlalu besar, kecilkan dengan alat Kompres PDF.</p></details>
-      <details><summary>Apakah bookmark dan kolom isian ikut?</summary><p>Isi halaman dan link di dalam halaman ikut. Bookmark (daftar isi di samping) dan kolom isian dari file asli belum ikut digabung.</p></details>
-      <details><summary>Bisa untuk PDF yang dikunci kata sandi?</summary><p>Belum. Buka dulu kuncinya dengan aplikasi yang membuatnya. Mampat akan memberi tahu file mana yang terkunci.</p></details>
+      <details><summary>Apakah bookmark dan kolom isian ikut?</summary><p>Bookmark (daftar isi di samping) ikut: setiap file jadi satu bookmark dengan namanya, dan bookmark asli tiap file ada di bawahnya. Isi halaman dan link di dalam halaman juga ikut. Kolom isian (formulir) dari file asli belum ikut digabung.</p></details>
+      <details><summary>Bisa untuk PDF yang dikunci kata sandi?</summary><p>Bisa. Mampat akan meminta kata sandinya lalu membuka kuncinya di perangkat kamu; kata sandinya tidak dikirim ke mana pun. PDF yang hanya dikunci izin dibuka otomatis. Hasilnya tidak lagi berkata sandi.</p></details>
     </div>
   </section>
 
@@ -177,6 +177,73 @@
   });
   $("clear").addEventListener("click", reset);
 
+  // ---------- bookmark (daftar isi) ----------
+  // baca bookmark sumber → [{ title, page (indeks halaman sumber), kids }]
+  function readOutline(src) {
+    const { PDFName, PDFArray, PDFRef, PDFDict, PDFString, PDFHexString } = PDFLib;
+    const ctx = src.context, pageRefs = src.getPages().map((pg) => pg.ref);
+    const named = (name) => {
+      const key = name instanceof PDFName ? name.decodeText() : name.decodeText();
+      const dests = src.catalog.lookup(PDFName.of("Dests"));
+      if (dests instanceof PDFDict) { const v = dests.lookup(PDFName.of(key)); if (v) return v; }
+      const names = src.catalog.lookup(PDFName.of("Names")), tree = names instanceof PDFDict ? names.lookup(PDFName.of("Dests")) : null;
+      const walk = (node, depth) => {
+        if (!(node instanceof PDFDict) || depth > 20) return null;
+        const arr = node.lookup(PDFName.of("Names"));
+        if (arr instanceof PDFArray) for (let i = 0; i + 1 < arr.size(); i += 2) { const k = arr.lookup(i); if (k && k.decodeText && k.decodeText() === key) return arr.lookup(i + 1); }
+        const kids = node.lookup(PDFName.of("Kids"));
+        if (kids instanceof PDFArray) for (let i = 0; i < kids.size(); i++) { const r = walk(kids.lookup(i), depth + 1); if (r) return r; }
+        return null;
+      };
+      return walk(tree, 0);
+    };
+    const pageOf = (item) => {
+      let d = item.lookup(PDFName.of("Dest"));
+      if (!d) { const a = item.lookup(PDFName.of("A")); if (a instanceof PDFDict) d = a.lookup(PDFName.of("D")); }
+      if (d instanceof PDFName || d instanceof PDFString || d instanceof PDFHexString) d = named(d);
+      if (d instanceof PDFDict) d = d.lookup(PDFName.of("D"));
+      if (d instanceof PDFArray && d.size()) { const r = d.get(0); const i = pageRefs.findIndex((x) => x === r || (r instanceof PDFRef && x.objectNumber === r.objectNumber)); return i < 0 ? null : i; }
+      return null;
+    };
+    const walk = (first, depth) => {
+      const out = [], seen = new Set();
+      for (let it = first; it instanceof PDFDict && !seen.has(it) && depth < 12; it = it.lookup(PDFName.of("Next"))) {
+        seen.add(it);
+        const t = it.lookup(PDFName.of("Title"));
+        out.push({ title: t && t.decodeText ? t.decodeText() : "", page: pageOf(it), kids: walk(it.lookup(PDFName.of("First")), depth + 1) });
+        if (out.length > 5000) break;
+      }
+      return out;
+    };
+    try { const root = src.catalog.lookup(PDFName.of("Outlines")); return root instanceof PDFDict ? walk(root.lookup(PDFName.of("First")), 0) : []; } catch (e) { return []; }
+  }
+  // tulis bookmark ke PDF hasil: satu induk per file (judul = nama file), bookmark aslinya di bawahnya
+  function writeOutline(out, entries) {
+    const { PDFName, PDFHexString, PDFNull } = PDFLib, ctx = out.context;
+    const make = (list, parentRef) => {
+      const refs = list.map(() => ctx.nextRef());
+      let total = 0;
+      list.forEach((e, i) => {
+        const kids = e.kids && e.kids.length ? make(e.kids, refs[i]) : null;
+        const dict = { Title: PDFHexString.fromText(e.title || "Tanpa judul"), Parent: parentRef };
+        if (i > 0) dict.Prev = refs[i - 1];
+        if (i < list.length - 1) dict.Next = refs[i + 1];
+        if (kids) { dict.First = kids.first; dict.Last = kids.last; dict.Count = -kids.count; }
+        if (e.pageRef) dict.Dest = [e.pageRef, PDFName.of("XYZ"), PDFNull, PDFNull, PDFNull];
+        ctx.assign(refs[i], ctx.obj(dict));
+        total += 1;
+      });
+      return { first: refs[0], last: refs[refs.length - 1], count: total };
+    };
+    if (!entries.length) return 0;
+    const rootRef = ctx.nextRef();
+    const top = make(entries, rootRef);
+    ctx.assign(rootRef, ctx.obj({ Type: "Outlines", First: top.first, Last: top.last, Count: top.count }));
+    out.catalog.set(PDFName.of("Outlines"), rootRef);
+    out.catalog.set(PDFName.of("PageMode"), PDFName.of("UseOutlines"));
+    return entries.length;
+  }
+
   $("go").addEventListener("click", async () => {
     if ($("go").disabled) return;
     busy = true; V.cancelled = false; V.show("vWork"); V.work(0, "Menyiapkan…");
@@ -184,21 +251,26 @@
       const { PDFDocument } = PDFLib;
       const out = await PDFDocument.create({ updateMetadata: false });
       const total = items.reduce((s, it) => s + it.n, 0);
-      let done = 0;
+      let done = 0, keptMarks = 0;
+      const outline = [];
       for (const it of items) {
         if (V.cancelled) throw new Error("cancelled");
         V.work(done / total * 0.9, "Menyalin " + it.file.name);
         const pages = await out.copyPages(it.doc, it.doc.getPageIndices());
         pages.forEach((p) => out.addPage(p));
+        // bookmark: nama file → halaman pertamanya, bookmark asli di bawahnya (menunjuk halaman hasil salinan)
+        const mapMarks = (list) => list.map((m) => { keptMarks++; return { title: m.title, pageRef: m.page != null && pages[m.page] ? pages[m.page].ref : null, kids: mapMarks(m.kids || []) }; });
+        outline.push({ title: M.baseName(it.file.name), pageRef: pages[0] && pages[0].ref, kids: mapMarks(readOutline(it.doc)) });
         done += it.n;
         await M.tick();
       }
+      writeOutline(out, outline);
       V.work(0.93, "Menyimpan PDF…");
       out.setProducer("Mampat"); out.setCreator("Mampat · Gabung PDF");
       const bytes = await out.save({ useObjectStreams: true });
       if (V.cancelled) throw new Error("cancelled");
       result = { bytes, name: M.baseName(items[0].file.name) + "-gabung.pdf" };
-      V.done({ pill: items.length + " PDF digabung", big: M.fmt(bytes.length), from: total + " halaman", note: "Nama file: <b>" + M.esc(result.name) + "</b>", saveText: "Simpan PDF" });
+      V.done({ pill: items.length + " PDF digabung", big: M.fmt(bytes.length), from: total + " halaman", note: "Nama file: <b>" + M.esc(result.name) + "</b>. Setiap file punya bookmark sendiri di panel samping" + (keptMarks ? ", dan " + keptMarks + " bookmark asli ikut dibawa" : "") + ".", saveText: "Simpan PDF" });
       M.track(TOOL, "selesai", { file: items.length, halaman: total });
     } catch (e) {
       if (e && e.message === "cancelled") { M.toast("Proses dibatalkan."); V.show("vEdit"); }
