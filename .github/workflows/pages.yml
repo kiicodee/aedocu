@@ -32,7 +32,7 @@ jobs:
           rsync -a --exclude='.git*' --exclude='README.md' --exclude='_site' ./ _site/
           touch _site/.nojekyll
           # pastikan setiap halaman alat ikut ter-deploy
-          for p in index.html kompres gabung pisah atur-halaman gambar-ke-pdf pdf-ke-gambar; do
+          for p in index.html kompres gabung pisah atur-halaman gambar-ke-pdf pdf-ke-gambar word-ke-pdf pdf-ke-word; do
             f="_site/$p"; [ -d "$f" ] && f="$f/index.html"
             test -f "$f" || { echo "Halaman hilang: $f"; exit 1; }
           done

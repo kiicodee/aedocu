@@ -1,12 +1,16 @@
 // Service worker Mampat: simpan semua alat supaya tetap jalan tanpa internet.
-const CACHE = "mampat-v6";
-const PAGES = ["./", "./kompres/", "./gabung/", "./pisah/", "./atur-halaman/", "./gambar-ke-pdf/", "./pdf-ke-gambar/"];
+const CACHE = "mampat-v7";
+const PAGES = ["./", "./kompres/", "./gabung/", "./pisah/", "./atur-halaman/", "./gambar-ke-pdf/", "./pdf-ke-gambar/", "./word-ke-pdf/", "./pdf-ke-word/"];
 const CORE = [...PAGES,
   "./assets/mampat.css", "./assets/mampat.js", "./assets/pdf-alat.js", "./assets/zip.js",
+  "./assets/word-ke-pdf.js", "./assets/ttf-subset.js", "./assets/pdf-ke-word.js",
   "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./favicon-32.png", "./apple-touch-icon.png",
   "https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js",
   "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js",
-  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"];
+  "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js",
+  "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+  "https://cdn.jsdelivr.net/npm/docx-preview@0.4.1/dist/docx-preview.min.js"];
+// font pengganti untuk Word ke PDF disimpan saat pertama kali dipakai (lewat cabang "simpanan" di bawah)
 const SKIP = /googletagmanager|google-analytics|analytics\.google|goatcounter|gc\.zgo\.at/;
 
 self.addEventListener("install", (e) => {
@@ -30,7 +34,13 @@ self.addEventListener("fetch", (e) => {
       .catch(() => caches.match(key).then((hit) => hit || caches.match(new URL("./", self.registration.scope).href))));
     return;
   }
-  // file bersama, library, font, ikon: pakai simpanan, perbarui di belakang layar
+  // file situs sendiri (assets/, ikon, manifest): ambil terbaru kalau online supaya selalu cocok dengan halamannya
+  if (new URL(req.url).origin === self.location.origin) {
+    e.respondWith(fetch(req).then((r) => { if (r.ok) { const copy = r.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); } return r; })
+      .catch(() => caches.match(req, { ignoreSearch: true })));
+    return;
+  }
+  // library & font dari CDN (alamatnya berversi, isinya tidak berubah): pakai simpanan, perbarui di belakang layar
   e.respondWith(caches.match(req).then((hit) => {
     const net = fetch(req).then((r) => { if (r && (r.ok || r.type === "opaque")) { const copy = r.clone(); caches.open(CACHE).then((c) => c.put(req, copy)); } return r; }).catch(() => hit);
     return hit || net;

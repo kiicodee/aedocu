@@ -47,6 +47,8 @@ window.MAMPAT_CONFIG = {
   const I = (d) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + "</svg>";
   const TOOLS = [
     { slug: "kompres", name: "Kompres PDF", desc: "Kecilkan ke ukuran yang kamu tentukan", icon: I('<path d="M4 4h16M4 20h16M12 7v10m0 0-3-3m3 3 3-3"/>') },
+    { slug: "word-ke-pdf", isNew: true, name: "Word ke PDF", desc: "Dokumen .docx jadi PDF rapi", icon: I('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M8.5 11.5l1.2 5 1.8-4 1.8 4 1.2-5"/>') },
+    { slug: "pdf-ke-word", isNew: true, name: "PDF ke Word", desc: "PDF jadi .docx yang bisa diedit", icon: I('<path d="M4 7V5a2 2 0 0 1 2-2h7l5 5v3"/><path d="M13 3v5h5"/><path d="M4 13h16v8H4zM7 15.5l.8 3 1.2-2.4 1.2 2.4.8-3"/>') },
     { slug: "gabung", name: "Gabung PDF", desc: "Satukan beberapa PDF jadi satu", icon: I('<path d="M8 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h2M16 3h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-2M12 8v8M8 12h8"/>') },
     { slug: "pisah", name: "Pisah PDF", desc: "Ambil halaman tertentu atau pisah per halaman", icon: I('<circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.12 15.88M14.47 14.48 20 20M8.12 8.12 12 12"/>') },
     { slug: "atur-halaman", name: "Atur Halaman", desc: "Putar, hapus, dan urutkan ulang halaman", icon: I('<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 17.5h7m-3-3 3 3-3 3"/>') },
@@ -143,7 +145,11 @@ window.MAMPAT_CONFIG = {
     pdfjs: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js",
     worker: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js",
     pdflib: "https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js",
+    // khusus Word ke PDF: pembaca ZIP dan penyusun dokumen .docx
+    jszip: "https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js",
+    docx: "https://cdn.jsdelivr.net/npm/docx-preview@0.4.1/dist/docx-preview.min.js",
   };
+  const LIB_GLOBAL = { pdfjs: "pdfjsLib", pdflib: "PDFLib", jszip: "JSZip", docx: "docx" };
   function loadScript(src) {
     return new Promise((res, rej) => {
       const el = document.createElement("script");
@@ -161,13 +167,14 @@ window.MAMPAT_CONFIG = {
   }
   const libPromises = {};
   // muat library yang diminta ("pdflib", "pdfjs"); aman dipanggil berkali-kali
+  // "docx" butuh JSZip lebih dulu, jadi dimuat berurutan
   function loadLibs(names) {
-    return Promise.all(names.map((n) => {
-      if (n === "pdfjs" && window.pdfjsLib) return null;
-      if (n === "pdflib" && window.PDFLib) return null;
-      if (!libPromises[n]) libPromises[n] = loadScript(LIB[n]).catch((e) => { delete libPromises[n]; throw e; });
+    const one = (n) => {
+      if (window[LIB_GLOBAL[n]]) return Promise.resolve();
+      if (!libPromises[n]) libPromises[n] = (n === "docx" ? one("jszip") : Promise.resolve()).then(() => loadScript(LIB[n])).catch((e) => { delete libPromises[n]; throw e; });
       return libPromises[n];
-    })).then(() => { if (names.includes("pdfjs")) window.pdfjsLib.GlobalWorkerOptions.workerSrc = LIB.worker; });
+    };
+    return Promise.all(names.map(one)).then(() => { if (names.includes("pdfjs")) window.pdfjsLib.GlobalWorkerOptions.workerSrc = LIB.worker; });
   }
   // unduh library di awal tanpa diproses, lalu proses saat pengguna mulai berinteraksi
   function warmLibs(names, el) {
@@ -177,6 +184,67 @@ window.MAMPAT_CONFIG = {
     }).catch(() => {});
     ["pointerdown", "keydown", "dragenter", "touchstart"].forEach((ev) => window.addEventListener(ev, warm, { once: true, passive: true }));
     if (el) ["pointerenter", "focus"].forEach((ev) => el.addEventListener(ev, warm, { once: true, passive: true }));
+  }
+
+  // ---------- PDF terkunci: buka kuncinya di perangkat ini ----------
+  // pdf-lib biasa tidak bisa membaca PDF terenkripsi; @cantoo/pdf-lib (turunan pdf-lib) bisa mendekripsi.
+  // Library ini (±600 KB) hanya diunduh kalau memang ada PDF terkunci.
+  const CRYPT_LIB = "https://cdn.jsdelivr.net/npm/@cantoo/pdf-lib@2.11.1/dist/pdf-lib.min.js";
+  let cryptLib = null;
+  async function loadCrypt() {
+    if (cryptLib) return cryptLib;
+    const keep = window.PDFLib; // library ini juga memakai nama global PDFLib: simpan yang asli, lalu kembalikan
+    try { await loadScript(CRYPT_LIB); cryptLib = window.PDFLib; } finally { if (keep) window.PDFLib = keep; else delete window.PDFLib; }
+    return cryptLib;
+  }
+  function isEncrypted(bytes) {
+    // cari "/Encrypt" (trailer) tanpa mengubah seluruh file jadi teks
+    const pat = [47, 69, 110, 99, 114, 121, 112, 116];
+    for (let i = bytes.length - pat.length; i >= 0; i--) {
+      if (bytes[i] !== 47) continue;
+      let ok = true; for (let k = 1; k < pat.length; k++) if (bytes[i + k] !== pat[k]) { ok = false; break; }
+      if (!ok) continue;
+      // harus diikuti referensi objek ("12 0 R") atau kamus ("<<"), seperti di trailer PDF terenkripsi
+      let j = i + pat.length; while (j < bytes.length && (bytes[j] === 32 || bytes[j] === 10 || bytes[j] === 13)) j++;
+      if ((bytes[j] >= 48 && bytes[j] <= 57) || (bytes[j] === 60 && bytes[j + 1] === 60)) return true;
+    }
+    return false;
+  }
+  // kotak kata sandi; hasil: teks kata sandi, atau null kalau dibatalkan
+  function askPassword(name, wrong) {
+    return new Promise((resolve) => {
+      const d = document.createElement("div");
+      d.className = "pwbox"; d.setAttribute("role", "dialog"); d.setAttribute("aria-modal", "true"); d.setAttribute("aria-labelledby", "pwT");
+      d.innerHTML = '<form class="pwcard"><h2 id="pwT">PDF ini dikunci kata sandi</h2><p>Masukkan kata sandi untuk membuka <b></b>. Kata sandinya hanya dipakai di perangkat ini, tidak dikirim ke mana pun.</p>' +
+        '<input class="inp" type="password" autocomplete="off" aria-label="Kata sandi PDF" placeholder="Kata sandi">' + (wrong ? '<p class="err">Kata sandi salah. Coba lagi.</p>' : "") +
+        '<div class="pwacts"><button type="button" class="ghost" data-x>Batal</button><button type="submit" class="cta">Buka</button></div></form>';
+      d.querySelector("b").textContent = name;
+      document.body.appendChild(d);
+      const inp = d.querySelector("input"); setTimeout(() => inp.focus(), 30);
+      const done = (v) => { d.remove(); resolve(v); };
+      d.querySelector("form").addEventListener("submit", (e) => { e.preventDefault(); done(inp.value); });
+      d.querySelector("[data-x]").addEventListener("click", () => done(null));
+      d.addEventListener("keydown", (e) => { if (e.key === "Escape") done(null); });
+    });
+  }
+  // kembalikan { bytes, unlocked: null | "password" | "owner" } — bytes sudah tanpa enkripsi
+  async function unlockPdf(bytes, name) {
+    if (!isEncrypted(bytes)) return { bytes, unlocked: null };
+    let C;
+    try { C = await loadCrypt(); } catch (e) { throw Object.assign(new Error("lib"), { userMsg: "Alat pembuka kunci PDF gagal dimuat. Periksa koneksi internet, lalu coba lagi." }); }
+    const open = async (pw) => (await (await C.PDFDocument.load(bytes, { password: pw, updateMetadata: false })).save({ useObjectStreams: true }));
+    try { return { bytes: await open(""), unlocked: "owner" }; } catch (e) { if (!/password|encrypt/i.test(e.message || "")) throw Object.assign(e, { userMsg: "PDF terkunci ini tidak bisa dibuka. Mungkin filenya rusak atau memakai kunci yang belum didukung." }); }
+    let wrong = false;
+    for (;;) {
+      const pw = await askPassword(name, wrong);
+      if (pw === null) throw Object.assign(new Error("batal"), { userMsg: "Tidak jadi dibuka. PDF terkunci butuh kata sandinya.", cancelled: true });
+      try { return { bytes: await open(pw), unlocked: "password" }; }
+      catch (e) { if (/password/i.test(e.message || "")) { wrong = true; continue; } throw Object.assign(e, { userMsg: "PDF terkunci ini tidak bisa dibuka. Mungkin filenya rusak atau memakai kunci yang belum didukung." }); }
+    }
+  }
+  function unlockNote(how) {
+    if (how === "password") toast("Kunci PDF dibuka dengan kata sandimu. Hasilnya tidak lagi berkata sandi.");
+    else if (how === "owner") toast("PDF ini dikunci izin oleh pembuatnya. Kuncinya dibuka di perangkatmu supaya bisa diproses. Pastikan kamu berhak mengubahnya.");
   }
 
   // ---------- offline & pasang aplikasi ----------
@@ -201,5 +269,5 @@ window.MAMPAT_CONFIG = {
   customElements.define("mampat-top", MampatTop);
   customElements.define("mampat-foot", MampatFoot);
 
-  window.Mampat = { ROOT, KB, MB, TOOLS, toolUrl, track, bucket, nf, fmt, toast, tick, esc, baseName, pdfError, saveFile, LIB, loadScript, whenIdle, loadLibs, warmLibs };
+  window.Mampat = { ROOT, KB, MB, TOOLS, toolUrl, track, bucket, nf, fmt, toast, tick, esc, baseName, pdfError, saveFile, LIB, loadScript, whenIdle, loadLibs, warmLibs, unlockPdf, unlockNote };
 })();

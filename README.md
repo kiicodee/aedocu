@@ -14,6 +14,8 @@ Live: https://zakycahyohadi.github.io/mampat/
 | Atur Halaman | [`/atur-halaman/`](https://zakycahyohadi.github.io/mampat/atur-halaman/) | Putar, hapus, dan urutkan ulang halaman dengan thumbnail |
 | Gambar ke PDF | [`/gambar-ke-pdf/`](https://zakycahyohadi.github.io/mampat/gambar-ke-pdf/) | JPG/PNG jadi satu PDF: A4, F4/Folio, Letter, atau ikuti gambar |
 | PDF ke Gambar | [`/pdf-ke-gambar/`](https://zakycahyohadi.github.io/mampat/pdf-ke-gambar/) | Setiap halaman jadi JPG atau PNG, banyak halaman jadi ZIP |
+| Word ke PDF | [`/word-ke-pdf/`](https://zakycahyohadi.github.io/mampat/word-ke-pdf/) | .docx jadi PDF: teks bisa dipilih, link bisa diklik, font kembaran Calibri/Times/Arial ditanam |
+| PDF ke Word | [`/pdf-ke-word/`](https://zakycahyohadi.github.io/mampat/pdf-ke-word/) | PDF jadi .docx yang bisa diedit: paragraf, tebal/miring, warna, link, tab, dan gambar |
 
 ## Struktur
 
@@ -21,9 +23,11 @@ Live: https://zakycahyohadi.github.io/mampat/
 - `<alat>/index.html`: satu halaman per alat, hanya memuat library yang dibutuhkan
 - `assets/mampat.css`, `assets/mampat.js`: gaya, header/menu, analytics GoatCounter, simpan file (dipakai semua halaman)
 - `assets/pdf-alat.js`: pilih file, thumbnail, drag urutan, rentang halaman (alat PDF selain kompres)
-- `assets/zip.js`: penulis ZIP kecil (CRC32, nama file UTF-8)
+- `assets/zip.js`: penulis ZIP kecil (CRC32, nama file UTF-8), juga dipakai untuk menulis .docx
+- `assets/word-ke-pdf.js` + `assets/ttf-subset.js`: Word → PDF (docx-preview menyusun halaman, teks digambar ulang dengan font yang dipotong sendiri)
+- `assets/pdf-ke-word.js`: PDF → Word (teks disusun ulang jadi paragraf, gambar diambil dari PDF)
 - `sw.js`: service worker untuk offline; naikkan versi `CACHE` setiap ada perubahan
-- Library dari cdnjs: pdf-lib 1.17.1, pdf.js 3.11.174
+- Library: pdf-lib 1.17.1, pdf.js 3.11.174, JSZip 3.10.1 (cdnjs); docx-preview 0.4.1 dan font Carlito/Caladea/Tinos/Arimo/Cousine (jsDelivr)
 
 Statistik pengunjung: GoatCounter (`GOATCOUNTER` di `assets/mampat.js`), event `mampat/<alat>/<aksi>`, tanpa nama atau isi file.
 
