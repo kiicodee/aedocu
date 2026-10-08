@@ -103,7 +103,7 @@
       <details><summary>Pilih JPG atau PNG?</summary><p>JPG lebih kecil dan cocok untuk dokumen berfoto atau untuk dikirim. PNG lebih tajam untuk teks dan garis tipis, tapi ukurannya lebih besar.</p></details>
       <details><summary>Resolusi mana yang sebaiknya dipilih?</summary><p>72 dpi untuk pratinjau cepat, 150 dpi untuk dibaca di HP atau laptop, 300 dpi untuk dicetak. Makin tinggi, makin besar file dan makin lama prosesnya.</p></details>
       <details><summary>Bagaimana membuka ZIP di HP?</summary><p>Di Android, buka lewat aplikasi Files. Di iPhone, ketuk file ZIP di aplikasi File dan isinya langsung diekstrak ke folder baru.</p></details>
-      <details><summary>Bisa untuk PDF yang dikunci kata sandi?</summary><p>Belum. Buka dulu kuncinya dengan aplikasi yang membuatnya, lalu pilih file yang sudah tidak terkunci.</p></details>
+      <details><summary>Bisa untuk PDF yang dikunci kata sandi?</summary><p>Bisa. Mampat akan meminta kata sandinya lalu membuka kuncinya di perangkat kamu; kata sandinya tidak dikirim ke mana pun. PDF yang hanya dikunci izin dibuka otomatis. Hasilnya tidak lagi berkata sandi.</p></details>
     </div>
   </section>
 
@@ -127,6 +127,8 @@
 
   async function load(file) {
     const my = ++loadSeq;
+    // selama PDF baru dibaca, tombol proses dimatikan (jangan sampai file lama yang diproses)
+    $("go").disabled = true; $("goText").textContent = "Membaca PDF…";
     try {
       const r = await A.openPdf(file, false);
       if (my !== loadSeq) { r.view.destroy(); return; }
@@ -145,7 +147,10 @@
       }
       paint(); V.show("vEdit");
       M.track(TOOL, "pilih", { halaman: doc.n, ukuran: M.bucket(file.size) });
-    } catch (e) { M.toast(e.userMsg || "PDF ini tidak bisa dibaca.", true); }
+    } catch (e) {
+      M.toast(e.userMsg || "PDF ini tidak bisa dibaca.", true);
+      if (my === loadSeq && doc) { $("go").disabled = false; if (typeof paint === "function") paint(); else if (typeof sync === "function") sync(); else $("goText").textContent = "Ubah jadi Word (" + doc.n + " halaman)"; }
+    }
   }
   function scaleFor(w, h) { let s = opt.dpi / 72; if (w * s * h * s > MAX_PIXELS) s = Math.sqrt(MAX_PIXELS / (w * h)); return s; }
   function paint() {

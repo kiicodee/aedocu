@@ -100,7 +100,7 @@
       <details><summary>Urutan halamannya bisa diatur?</summary><p>Bisa. Hasil mengikuti urutan yang kamu tulis, jadi <span class="mono">5, 1-3</span> menaruh halaman 5 di depan. Untuk memutar, menghapus, atau mengatur urutan dengan drag, pakai alat Atur Halaman.</p></details>
       <details><summary>Kenapa "Pisah per halaman" hasilnya ZIP?</summary><p>Supaya kamu cukup menyimpan satu file, bukan puluhan unduhan terpisah. ZIP bisa dibuka langsung di Windows, Mac, Android, dan aplikasi File di iPhone.</p></details>
       <details><summary>Apakah kualitasnya turun?</summary><p>Tidak. Halaman disalin apa adanya, tidak dikompres ulang.</p></details>
-      <details><summary>Bisa untuk PDF yang dikunci kata sandi?</summary><p>Belum. Buka dulu kuncinya dengan aplikasi yang membuatnya, lalu pilih file yang sudah tidak terkunci.</p></details>
+      <details><summary>Bisa untuk PDF yang dikunci kata sandi?</summary><p>Bisa. Mampat akan meminta kata sandinya lalu membuka kuncinya di perangkat kamu; kata sandinya tidak dikirim ke mana pun. PDF yang hanya dikunci izin dibuka otomatis. Hasilnya tidak lagi berkata sandi.</p></details>
     </div>
   </section>
 
@@ -122,6 +122,8 @@
 
   async function load(file) {
     const my = ++loadSeq;
+    // selama PDF baru dibaca, tombol proses dimatikan (jangan sampai file lama yang diproses)
+    $("go").disabled = true; $("goText").textContent = "Membaca PDF…";
     try {
       const r = await A.openPdf(file, true);
       if (my !== loadSeq) { r.view.destroy(); return; }
@@ -132,7 +134,10 @@
       buildGrid(); setMode(doc.n > 1 ? mode : "ambil");
       V.show("vEdit");
       M.track(TOOL, "pilih", { halaman: doc.n, ukuran: M.bucket(file.size) });
-    } catch (e) { M.toast(e.userMsg || "PDF ini tidak bisa dibaca.", true); }
+    } catch (e) {
+      M.toast(e.userMsg || "PDF ini tidak bisa dibaca.", true);
+      if (my === loadSeq && doc) { $("go").disabled = false; if (typeof paint === "function") paint(); else if (typeof sync === "function") sync(); else $("goText").textContent = "Ubah jadi Word (" + doc.n + " halaman)"; }
+    }
   }
   function buildGrid() {
     const g = $("grid"); g.textContent = "";

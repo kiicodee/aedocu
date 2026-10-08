@@ -339,7 +339,7 @@ footer { contain-intrinsic-height: auto 80px; }
       <details><summary>Kenapa hasilnya sedikit di bawah target, bukan persis?</summary><p>Mampat menyisakan sedikit ruang supaya hasilnya tidak pernah melewati batas. Di antara pengaturan yang muat, yang dipilih selalu yang kualitasnya paling tinggi.</p></details>
       <details><summary>Seberapa besar file yang bisa diproses?</summary><p>Tergantung memori perangkat. File ratusan MB biasanya lancar di laptop. Di HP, file besar tetap bisa, tapi prosesnya lebih lama.</p></details>
       <details><summary>Target saya tidak tercapai. Harus bagaimana?</summary><p>Nyalakan Hitam-putih di pengaturan lanjutan, hapus halaman yang tidak perlu, atau naikkan targetnya. Sebagai patokan, satu halaman A4 hasil scan yang masih enak dibaca butuh sekitar 30–60 KB.</p></details>
-      <details><summary>Bisa untuk PDF yang dikunci kata sandi?</summary><p>Belum. Buka dulu kuncinya dengan aplikasi yang membuatnya, lalu kompres file yang sudah tidak terkunci.</p></details>
+      <details><summary>Bisa untuk PDF yang dikunci kata sandi?</summary><p>Bisa. Mampat akan meminta kata sandinya, membuka kuncinya di perangkat kamu (kata sandinya tidak dikirim ke mana pun), lalu mengompresnya. PDF yang hanya dikunci izin dibuka otomatis. Hasilnya tidak lagi berkata sandi.</p></details>
     </div>
   </section>
 
@@ -530,6 +530,10 @@ footer { contain-intrinsic-height: auto 80px; }
     show("sPrev"); $("cmpBusy").hidden = false; $("imgA").removeAttribute("src"); $("imgB").removeAttribute("src"); setPred(null);
     try {
       S.bytes = new Uint8Array(await f.arrayBuffer());
+      // PDF terkunci: minta kata sandi / buka kunci izin dulu (di perangkat ini), lalu dikompres seperti biasa
+      const unlocked = await M.unlockPdf(S.bytes, f.name);
+      if (seq !== loadSeq) return;
+      S.bytes = unlocked.bytes; M.unlockNote(unlocked.unlocked);
       if (!window.PDFLib || !window.pdfjsLib || !PDFDocument) {
         $("cmpBusy").textContent = "Menyiapkan mesin PDF…";
         try { await ensureLibs(); } catch (e) { if (seq === loadSeq) { toast("Mesin PDF gagal dimuat. Periksa koneksi internet, lalu coba lagi.", true); resetFile(); } return; }
@@ -552,7 +556,7 @@ footer { contain-intrinsic-height: auto 80px; }
       console.error(err);
       if (seq !== loadSeq) return;
       const pw = err && err.name === "PasswordException";
-      toast(pw ? "PDF ini dikunci kata sandi. Buka kuncinya dulu, lalu coba lagi." : "PDF ini tidak bisa dibaca. Mungkin filenya rusak.", true);
+      toast(err && err.userMsg ? err.userMsg : pw ? "PDF ini dikunci kata sandi. Buka kuncinya dulu, lalu coba lagi." : "PDF ini tidak bisa dibaca. Mungkin filenya rusak.", true);
       resetFile();
     }
   }

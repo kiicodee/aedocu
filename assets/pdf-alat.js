@@ -48,7 +48,10 @@
   // ---------- buka PDF ----------
   // pdf.js untuk tampilan, pdf-lib untuk mengubah. Error dilempar dengan pesan yang ramah (err.userMsg).
   async function openPdf(file, needEdit) {
-    const bytes = new Uint8Array(await file.arrayBuffer());
+    let bytes = new Uint8Array(await file.arrayBuffer());
+    // PDF terkunci: minta kata sandi / buka kunci izin dulu, lalu lanjut seperti PDF biasa
+    const u = await M.unlockPdf(bytes, file.name);
+    bytes = u.bytes; M.unlockNote(u.unlocked);
     try {
       await M.loadLibs(needEdit ? ["pdfjs", "pdflib"] : ["pdfjs"]);
       const view = await pdfjsLib.getDocument({ data: bytes.slice() }).promise;
